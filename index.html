@@ -1302,46 +1302,52 @@
             sellEl.textContent = sell ? sell.price.toLocaleString() : '-';
         }
     },
-
-    // 🌟 หน้าต่างเลือกวิธีพิมพ์
-    showPrintModal: function(data, pdfUrl) {
+showPrintModal: function(data, pdfUrl) {
         let modal = document.getElementById('native-print-modal');
+        // ลบอันเก่าทิ้งเพื่อรีเซ็ตปุ่มใหม่เสมอ
+        if (modal) modal.remove();
+
+        modal = document.createElement('div');
+        modal.id = 'native-print-modal';
+        modal.className = 'fixed inset-0 bg-slate-900/80 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity';
         
-        if (!modal) {
-            modal = document.createElement('div');
-            modal.id = 'native-print-modal';
-            modal.className = 'fixed inset-0 bg-slate-900/80 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm hidden transition-opacity';
-            
-            modal.innerHTML = `
-                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 flex flex-col gap-4 transform transition-all scale-100">
-                    <h3 class="text-xl font-bold text-center text-slate-800 border-b pb-3 border-slate-100">🖨️ พิมพ์ใบเสร็จ</h3>
-                    <p class="text-xs text-center text-slate-500 mb-2">เลือกวิธีการพิมพ์ที่รองรับกับอุปกรณ์ของคุณ</p>
+        modal.innerHTML = `
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 flex flex-col gap-3 transform transition-all scale-100">
+                <h3 class="text-xl font-bold text-center text-slate-800 border-b pb-3 border-slate-100">🧾 จัดการใบเสร็จ</h3>
 
-                    <button id="btn-print-bt" class="w-full py-4 bg-blue-600 text-white rounded-xl font-bold text-lg shadow-md hover:bg-blue-700 transition flex justify-center items-center gap-2">
-                        <i class="fa-brands fa-bluetooth text-xl"></i> พิมพ์ผ่าน Bluetooth (Android)
-                    </button>
+                ${pdfUrl ? `
+                <button id="btn-view-pdf" class="w-full py-3 bg-emerald-500 text-white rounded-xl font-bold text-base shadow-md hover:bg-emerald-600 transition flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-file-pdf text-xl"></i> ดูบิล (PDF)
+                </button>
+                ` : ''}
 
-                    <button id="btn-print-native" class="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg shadow-md hover:bg-indigo-700 transition flex justify-center items-center gap-2">
-                        <i class="fa-brands fa-apple text-xl"></i> พิมพ์ผ่าน AirPrint (iOS / PC)
-                    </button>
+                <button id="btn-print-bt" class="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-base shadow-md hover:bg-blue-700 transition flex justify-center items-center gap-2">
+                    <i class="fa-brands fa-bluetooth text-xl"></i> พิมพ์ผ่าน Bluetooth
+                </button>
 
-                    <button onclick="document.getElementById('native-print-modal').classList.add('hidden')" class="w-full py-2 mt-4 bg-white border-2 border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition">
-                        ปิดหน้าต่าง
-                    </button>
-                </div>
-            `;
-            document.body.appendChild(modal);
+                <button onclick="document.getElementById('native-print-modal').remove()" class="w-full py-2 mt-2 bg-white border-2 border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition">
+                    ปิดหน้าต่าง
+                </button>
+            </div>
+        `;
+        document.body.appendChild(modal);
 
-            document.getElementById('btn-print-bt').addEventListener('click', function(e) {
-                e.preventDefault();
-                document.getElementById('native-print-modal').classList.add('hidden');
-                app.printWebBluetooth(app.lastReceiptData);
-            });
-
-            document.getElementById('btn-print-native').addEventListener('click', () => {
-                app.printThermalReceipt(app.lastReceiptData);
+        // ใส่คำสั่งให้ปุ่มดูบิล
+        if (pdfUrl) {
+            document.getElementById('btn-view-pdf').addEventListener('click', () => {
+                window.open(pdfUrl, '_blank');
             });
         }
+
+        // ใส่คำสั่งให้ปุ่ม Bluetooth
+        document.getElementById('btn-print-bt').addEventListener('click', function(e) {
+            e.preventDefault();
+            modal.classList.add('hidden');
+            app.printWebBluetooth(app.lastReceiptData);
+        });
+
+        app.lastReceiptData = data;
+    },
 
         app.lastReceiptData = data;
         modal.classList.remove('hidden');
@@ -1427,7 +1433,7 @@
             text += "       ขอบคุณที่ใช้บริการ\n\n\n\n";
 
             let bytes = [];
-            bytes.push(0x1B, 0x40);
+            bytes.push(0x1B, 0x40); 
             bytes.push(0x1C, 0x2E); 
             bytes.push(0x1B, 0x74, 26);
             
