@@ -1234,7 +1234,8 @@
                 }
                 bytes.push(0x0A, 0x0A, 0x0A);
                 let payload = new Uint8Array(bytes); 
-                let chunkSize = 100; 
+                let chunkSize = 120; // ⚡ ปรับก้อนข้อมูลให้ใหญ่ขึ้นอีกนิด (จาก 100 เป็น 120)
+                
                 for (let i = 0; i < payload.length; i += chunkSize) {
                     let chunk = payload.slice(i, i + chunkSize);
                     if (printCharacteristic.properties.writeWithoutResponse) {
@@ -1242,7 +1243,7 @@
                     } else {
                         await printCharacteristic.writeValue(chunk);
                     }
-                    await new Promise(r => setTimeout(r, 15)); 
+                    await new Promise(r => setTimeout(r, 10)); // ⚡ ลดเวลาพักลง (จาก 15 เหลือ 10)
                 }
                 setTimeout(() => { 
                     if (device.gatt.connected) device.gatt.disconnect(); 
