@@ -286,15 +286,16 @@
       </div>
 
       <div class="flex-1 overflow-y-auto p-2 md:p-4 bg-slate-100" id="multi-scroll-area">
-         <div class="hidden md:flex bg-slate-200 border border-slate-300 rounded-t-lg text-[10px] text-slate-600 font-bold uppercase p-2 border-b">
+          <div class="hidden md:flex bg-slate-200 border border-slate-300 rounded-t-lg text-[10px] text-slate-600 font-bold uppercase p-2 border-b">
              <div class="w-8 text-center">#</div>
-             <div class="w-48 px-2">หมวดหมู่</div> 
              <div class="flex-1 px-2">สินค้า</div>
+             <div class="w-40 px-2">หมวดหมู่</div> 
              <div class="w-20 px-2 text-right">ราคา</div>
              <div class="w-20 px-2 text-right">จำนวน</div>
              <div class="w-16 px-2 text-center">หน่วย</div>
              <div class="w-24 px-2 text-right">รวม</div>
              <div class="w-8"></div>
+         </div>
          </div>
          <div id="multi-items-body" class="flex flex-col gap-2 md:gap-0 md:bg-white md:border md:border-t-0 md:border-slate-300 md:rounded-b-lg overflow-hidden pb-1 md:pb-0"></div>
          <button onclick="app.addMultiRow()" class="mt-2 md:mt-4 w-full py-3 border-2 border-dashed border-indigo-300 text-indigo-600 bg-white md:bg-indigo-50/50 rounded-xl md:rounded-lg font-bold text-sm transition hover:bg-indigo-100 flex items-center justify-center gap-2 shadow-sm">
@@ -774,60 +775,60 @@ selectItem: function(val, type) {
             }
         }
         this.activeInput = null;
-    },
-    addMultiRow: function() {
-        const tbody = document.getElementById('multi-items-body');
-        const rowIdx = tbody.children.length + 1;
-        const rowId = Date.now() + Math.random();
+    },addMultiRow: function() {
+          const tbody = document.getElementById('multi-items-body');
+          const rowIdx = tbody.children.length + 1;
+          const rowId = Date.now() + Math.random();
 
-        const div = document.createElement('div');
-        // อัปเดตคลาสให้รองรับมือถือ (เรียงเป็นตารางสวยๆ ไม่รก)
-        div.className = "multi-row relative bg-white p-3 md:p-1 border border-slate-200 md:border-b md:border-x-0 md:border-t-0 rounded-xl md:rounded-none mb-3 md:mb-0 shadow-sm md:shadow-none transition-all";
-        
-        div.innerHTML = `
-           <div class="flex justify-between md:hidden mb-2 pb-2 border-b border-slate-100">
-              <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">รายการที่ ${rowIdx}</span>
-              <button onclick="this.closest('.multi-row').remove();app.calcMultiTotal()" class="text-white bg-rose-500 w-6 h-6 flex items-center justify-center rounded-full shadow"><i class="fa-solid fa-times"></i></button>
-           </div>
-           <div class="grid grid-cols-2 md:flex md:flex-row md:items-center gap-2 md:gap-0">
-              <div class="hidden md:block w-8 text-center text-slate-400 text-[10px]">${rowIdx}</div>
-              
-              <div class="col-span-2 md:flex-1 md:px-1 relative">
-                 <label class="md:hidden text-[10px] text-slate-400 font-bold ml-1">ชื่อสินค้า</label>
-                 ${this.createInputHTML('prod', rowId)}
-              </div>
-              
-              <div class="col-span-2 md:w-48 md:px-1">
-                 <label class="md:hidden text-[10px] text-slate-400 font-bold ml-1">หมวดหมู่</label>
-                 ${this.createInputHTML('cat', rowId)}
-              </div>
+          const div = document.createElement('div');
+          // จัด Grid มือถือใหม่เป็น 3 คอลัมน์ เพื่อให้ ราคา-จำนวน-หน่วย อยู่บรรทัดเดียวกัน
+          div.className = "multi-row relative bg-white p-3 md:p-1 border border-slate-200 md:border-b md:border-x-0 md:border-t-0 rounded-xl md:rounded-none mb-3 md:mb-0 shadow-sm md:shadow-none transition-all";
+          
+          div.innerHTML = `
+             <div class="flex justify-between md:hidden mb-2 pb-2 border-b border-slate-100">
+                <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">รายการที่ ${rowIdx}</span>
+                <button onclick="this.closest('.multi-row').remove();app.calcMultiTotal()" class="text-white bg-rose-500 w-6 h-6 flex items-center justify-center rounded-full shadow"><i class="fa-solid fa-times"></i></button>
+             </div>
+             <div class="grid grid-cols-3 md:flex md:flex-row md:items-center gap-2 md:gap-0">
+                <div class="hidden md:block w-8 text-center text-slate-400 text-[10px]">${rowIdx}</div>
+                
+                <div class="col-span-3 md:flex-1 md:px-1 relative">
+                   <label class="md:hidden text-[10px] text-slate-400 font-bold ml-1">ชื่อสินค้า</label>
+                   ${this.createInputHTML('prod', rowId)}
+                </div>
+                
+                <div class="col-span-3 md:w-40 md:px-1">
+                   <label class="md:hidden text-[10px] text-slate-400 font-bold ml-1">หมวดหมู่</label>
+                   ${this.createInputHTML('cat', rowId)}
+                </div>
 
-              <div class="col-span-1 md:w-20 md:px-1">
-                 <label class="md:hidden text-[10px] text-slate-400 font-bold ml-1">ราคา</label>
-                 <input type="number" inputmode="decimal" name="price" class="modal-input w-full border border-slate-300 rounded-lg md:rounded text-right outline-none focus:ring-2 focus:ring-indigo-500 transition" step="0.01" oninput="app.calcMultiTotal()" onclick="this.select()">
-              </div>
+                <div class="col-span-1 md:w-20 md:px-1">
+                   <label class="md:hidden text-[10px] text-slate-400 font-bold ml-1">ราคา</label>
+                   <input type="number" inputmode="decimal" name="price" class="modal-input w-full border border-slate-300 rounded-lg md:rounded text-right outline-none focus:ring-2 focus:ring-indigo-500 transition" step="0.01" oninput="app.calcMultiTotal()" onclick="this.select()">
+                </div>
 
-              <div class="col-span-1 md:w-20 md:px-1">
-                 <label class="md:hidden text-[10px] text-slate-400 font-bold ml-1">จำนวน</label>
-                 <input type="number" inputmode="decimal" name="qty" class="modal-input w-full border border-slate-300 rounded-lg md:rounded text-right outline-none focus:ring-2 focus:ring-indigo-500 transition" step="0.01" oninput="app.calcMultiTotal()" onclick="this.select()">
-              </div>
+                <div class="col-span-1 md:w-20 md:px-1">
+                   <label class="md:hidden text-[10px] text-slate-400 font-bold ml-1">จำนวน</label>
+                   <input type="number" inputmode="decimal" name="qty" class="modal-input w-full border border-slate-300 rounded-lg md:rounded text-right outline-none focus:ring-2 focus:ring-indigo-500 transition" step="0.01" oninput="app.calcMultiTotal()" onclick="this.select()">
+                </div>
 
-              <div class="hidden md:block md:w-16 md:px-1">
-                 <input type="text" name="unit" class="modal-input w-full border border-slate-300 rounded text-center outline-none focus:ring-2 focus:ring-indigo-500 transition" placeholder="หน่วย" onclick="this.select()">
-              </div>
+                <div class="col-span-1 md:w-16 md:px-1">
+                   <label class="md:hidden text-[10px] text-slate-400 font-bold ml-1">หน่วย</label>
+                   <input type="text" name="unit" class="modal-input w-full border border-slate-300 rounded-lg md:rounded text-center outline-none focus:ring-2 focus:ring-indigo-500 transition" placeholder="หน่วย" onclick="this.select()">
+                </div>
 
-              <div class="col-span-2 md:w-24 md:px-2 text-right bg-indigo-50 md:bg-transparent p-2 md:p-0 rounded-lg flex flex-row md:flex-col justify-between md:justify-center items-center mt-1 md:mt-0">
-                 <span class="md:hidden text-xs text-indigo-400 font-bold">รวมรายการนี้:</span>
-                 <span class="font-bold text-indigo-600 md:text-slate-700 row-total text-base md:text-sm block">0.00</span>
-              </div>
+                <div class="col-span-3 md:w-24 md:px-2 text-right bg-indigo-50 md:bg-transparent p-2 md:p-0 rounded-lg flex flex-row md:flex-col justify-between md:justify-center items-center mt-1 md:mt-0">
+                   <span class="md:hidden text-xs text-indigo-400 font-bold">รวมรายการนี้:</span>
+                   <span class="font-bold text-indigo-600 md:text-slate-700 row-total text-base md:text-sm block">0.00</span>
+                </div>
 
-              <div class="hidden md:block w-8 text-center">
-                 <button onclick="this.closest('.multi-row').remove();app.calcMultiTotal()" class="text-slate-300 hover:text-rose-500 p-1 rounded-full hover:bg-rose-50 transition"><i class="fa-solid fa-trash"></i></button>
-              </div>
-           </div>
-        `;
-        tbody.appendChild(div);
-    },
+                <div class="hidden md:block w-8 text-center">
+                   <button onclick="this.closest('.multi-row').remove();app.calcMultiTotal()" class="text-slate-300 hover:text-rose-500 p-1 rounded-full hover:bg-rose-50 transition"><i class="fa-solid fa-trash"></i></button>
+                </div>
+             </div>
+          `;
+          tbody.appendChild(div);
+      },
 
     calcMultiTotal: function() {
         let grandTotal = 0;
