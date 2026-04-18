@@ -1391,7 +1391,9 @@
                 const width = 384; 
                 canvas.width = width; 
                 let currentY = 30; 
-                canvas.height = 300 + (data.items.length * 60);
+                
+                // 🛠️ แก้จุดที่ 1: เพิ่มความยาวกระดาษ (บวกเผื่อขอบล่างไปอีก 80 พิกเซล) จะได้เห็นคำขอบคุณ
+                canvas.height = 380 + (data.items.length * 60);
 
                 ctx.fillStyle = 'white'; 
                 ctx.fillRect(0, 0, canvas.width, canvas.height); 
@@ -1456,6 +1458,7 @@
                 currentY += 30;
                 
                 ctx.textAlign = 'center'; 
+                // ข้อความนี้แหละครับที่จะโผล่มาตรงกลางด้านล่างแล้ว!
                 ctx.fillText("ขอบคุณที่ใช้บริการ", width/2, currentY);
 
                 Swal.fire({ 
@@ -1483,13 +1486,11 @@
                         bytes.push(byte);
                     }
                 }
-                bytes.push(0x0A, 0x0A, 0x0A);
+                // ลดระยะฟีดกระดาษตอนจบลงเหลือ 2 บรรทัด (ให้ประหยัดเวลาและกระดาษ)
+                bytes.push(0x0A, 0x0A);
 
-                // 🛑 ตั้งค่าความเร็วให้เสถียรที่สุดตรงนี้
-                // 🛑 ตั้งค่าความเร็วบลูทูธ (จุดสมดุล)
+                // 🛠️ แก้จุดที่ 2: ปรับแต่งความเร็วให้ซิ่งขึ้น (Chunk 128 / พัก 10ms)
                 let payload = new Uint8Array(bytes); 
-                
-                // ⚡ ลองปรับขึ้นมาเป็น 128 (เดิม 80)
                 let chunkSize = 128; 
                 
                 for (let i = 0; i < payload.length; i += chunkSize) {
@@ -1499,7 +1500,6 @@
                     } else {
                         await printCharacteristic.writeValue(chunk);
                     }
-                    // ⚡ ลดเวลาพักลงเหลือ 10 มิลลิวินาที (เดิม 20)
                     await new Promise(r => setTimeout(r, 10)); 
                 }
                 
@@ -1513,7 +1513,6 @@
                 Swal.close();
                 
                 if (err.name === 'NotFoundError') { 
-                    // กดปุ่มยกเลิกการเลือกเครื่องพิมพ์ จะไม่ทำอะไร
                     return; 
                 } else if (err.name === 'SecurityError') { 
                     alert('บลูทูธถูกบล็อก! กรุณาอนุญาตสิทธิ์ในเบราว์เซอร์\n(บนมือถือต้องเปิด GPS ด้วยครับ)'); 
