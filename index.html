@@ -1490,8 +1490,9 @@
                 bytes.push(0x0A, 0x0A);
 
                 // 🛠️ แก้จุดที่ 2: ปรับแต่งความเร็วให้ซิ่งขึ้น (Chunk 128 / พัก 10ms)
+                // 🛑 โหมดปลอดภัยสูงสุด (Safe Mode) เพื่อกันเครื่องสำลัก
                 let payload = new Uint8Array(bytes); 
-                let chunkSize = 80; 
+                let chunkSize = 64; // ลดขนาดก้อนลงเหลือ 64
                 
                 for (let i = 0; i < payload.length; i += chunkSize) {
                     let chunk = payload.slice(i, i + chunkSize);
@@ -1500,7 +1501,8 @@
                     } else {
                         await printCharacteristic.writeValue(chunk);
                     }
-                    await new Promise(r => setTimeout(r, 20)); 
+                    // พักเบรกให้เครื่องพิมพ์ย่อยข้อมูล 30 มิลลิวินาที
+                    await new Promise(r => setTimeout(r, 30)); 
                 }
                 
                 setTimeout(() => { 
