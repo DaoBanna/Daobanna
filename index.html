@@ -1427,7 +1427,9 @@
             text += "       ขอบคุณที่ใช้บริการ\n\n\n\n";
 
             let bytes = [];
-            bytes.push(0x1B, 0x40); 
+            bytes.push(0x1B, 0x40);
+            bytes.push(0x1C, 0x2E); 
+            bytes.push(0x1B, 0x74, 26);
             
             for (let i = 0; i < text.length; i++) {
                 let code = text.charCodeAt(i);
