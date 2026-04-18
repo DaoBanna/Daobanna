@@ -842,10 +842,12 @@
                 <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 flex flex-col gap-4 transform transition-all scale-100">
                     <h3 class="text-xl font-bold text-center text-slate-800 border-b pb-3 border-slate-100">🧾 จัดการใบเสร็จ</h3>
                     <div id="pdf-btn-container"></div>
-                    <button id="btn-print-bt" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold text-lg shadow-md hover:bg-blue-700 transition flex justify-center items-center gap-3">
+                    
+                    <button id="btn-print-bt" onclick="app.printWebBluetoothCanvas(app.lastReceiptData)" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold text-lg shadow-md hover:bg-blue-700 transition flex justify-center items-center gap-3">
                         <i class="fa-brands fa-bluetooth text-2xl"></i> พิมพ์ Bluetooth (Android)
                     </button>
-                    <button id="btn-print-native" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-lg shadow-md hover:bg-indigo-700 transition flex justify-center items-center gap-3">
+                    
+                    <button id="btn-print-native" onclick="app.printThermalReceipt(app.lastReceiptData)" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-lg shadow-md hover:bg-indigo-700 transition flex justify-center items-center gap-3">
                         <i class="fa-brands fa-apple text-2xl"></i> พิมพ์หน้าเว็บ (PC/iOS)
                     </button>
                     <button onclick="document.getElementById('native-print-modal').remove()" class="w-full py-3 mt-2 bg-slate-100 border-2 border-slate-200 text-slate-500 rounded-2xl font-bold hover:bg-slate-200 transition">ปิดหน้าต่าง</button>
@@ -858,21 +860,10 @@
                 pdfContainer.innerHTML = `<button onclick="window.open('${pdfUrl}', '_blank')" class="w-full mb-1 py-4 bg-emerald-500 text-white rounded-2xl font-bold text-lg shadow-md hover:bg-emerald-600 transition flex justify-center items-center gap-3"><i class="fa-solid fa-file-pdf text-2xl"></i> ดูบิล (PDF)</button>`;
             }
 
-            document.getElementById('btn-print-bt').addEventListener('click', function(e) {
-                e.preventDefault(); 
-                document.getElementById('native-print-modal').classList.add('hidden'); 
-                app.printWebBluetoothCanvas(app.lastReceiptData);
-            });
-
-            document.getElementById('btn-print-native').addEventListener('click', () => { 
-                app.printThermalReceipt(app.lastReceiptData); 
-            });
-
             app.lastReceiptData = data; 
             modal.classList.remove('hidden');
         },
 
-        // 🌟 แก้ไข: กลับไปใช้สเปคที่ปลอดภัย 100% (80 / 20) และปรับขนาดกระดาษให้เห็นคำว่า "ขอบคุณที่ใช้บริการ"
         printWebBluetoothCanvas: async function(data) {
             try {
                 if (!navigator.bluetooth) { 
@@ -880,6 +871,7 @@
                     return; 
                 }
                 
+                // สั่งเปิดบลูทูธ "ก่อน" ที่จะซ่อนหน้าต่าง
                 const device = await navigator.bluetooth.requestDevice({
                     acceptAllDevices: true,
                     optionalServices: [
@@ -892,6 +884,10 @@
                     ]
                 });
                 
+                // พอเลือกเครื่องเสร็จปุ๊บ ค่อยสั่งซ่อนหน้าต่างใบเสร็จ (แก้ปัญหาแอนดรอยด์บล็อกสิทธิ์ 100%)
+                const printModal = document.getElementById('native-print-modal');
+                if (printModal) printModal.classList.add('hidden');
+
                 Swal.fire({ 
                     title: 'กำลังเตรียมบิล...', 
                     text: 'ห้ามปิดหน้าจอ', 
@@ -922,7 +918,6 @@
                 canvas.width = width; 
                 let currentY = 30; 
                 
-                // คำนวณความสูงกระดาษใหม่ เผื่อให้เห็นคำขอบคุณแน่นอน
                 canvas.height = 360 + (data.items.length * 60);
 
                 ctx.fillStyle = 'white'; 
@@ -1015,10 +1010,8 @@
                         bytes.push(byte);
                     }
                 }
-                // ฟีดกระดาษทิ้งท้าย 3 บรรทัด (ค่ามาตรฐานเดิมที่เวิร์ก)
                 bytes.push(0x0A, 0x0A, 0x0A);
 
-                // 🛑 ล็อคสเปคความเร็วที่เสถียรที่สุด 80 / 20 ตามที่คุณแนะนำ
                 let payload = new Uint8Array(bytes); 
                 let chunkSize = 80; 
                 
@@ -1049,6 +1042,7 @@
                     alert('ข้อผิดพลาด:\n' + err.message); 
                 }
                 
+                // ถ้ามี Error ค่อยโชว์หน้าต่างใบเสร็จกลับมาอีกรอบ
                 const printModal = document.getElementById('native-print-modal'); 
                 if (printModal) printModal.classList.remove('hidden');
             }
