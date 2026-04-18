@@ -1391,7 +1391,9 @@
                 const width = 384; 
                 canvas.width = width; 
                 let currentY = 30; 
-                canvas.height = 300 + (data.items.length * 60);
+                
+                // ขยายกระดาษให้เห็นข้อความด้านล่าง
+                canvas.height = 360 + (data.items.length * 60);
 
                 ctx.fillStyle = 'white'; 
                 ctx.fillRect(0, 0, canvas.width, canvas.height); 
@@ -1454,9 +1456,11 @@
                 ctx.font = '22px "Sarabun", sans-serif'; 
                 ctx.fillText("---------------------------------------", 0, currentY); 
                 currentY += 30;
-                
+
+                // วาดข้อความขอบคุณที่นี่ครับ
                 ctx.textAlign = 'center'; 
                 ctx.fillText("ขอบคุณที่ใช้บริการ", width/2, currentY);
+                currentY += 30;
 
                 Swal.fire({ 
                     title: 'กำลังส่งไปพิมพ์...', 
@@ -1485,9 +1489,8 @@
                 }
                 bytes.push(0x0A, 0x0A, 0x0A);
 
-                // 🛑 ตั้งค่าความเร็วให้เสถียรที่สุดตรงนี้
                 let payload = new Uint8Array(bytes); 
-                let chunkSize = 80; // ขนาดปลอดภัยสำหรับ POS-58 จีน
+                let chunkSize = 80; 
                 
                 for (let i = 0; i < payload.length; i += chunkSize) {
                     let chunk = payload.slice(i, i + chunkSize);
@@ -1496,7 +1499,7 @@
                     } else {
                         await printCharacteristic.writeValue(chunk);
                     }
-                    await new Promise(r => setTimeout(r, 20)); // หน่วงเวลา 20ms
+                    await new Promise(r => setTimeout(r, 20)); 
                 }
                 
                 setTimeout(() => { 
@@ -1509,7 +1512,6 @@
                 Swal.close();
                 
                 if (err.name === 'NotFoundError') { 
-                    // กดปุ่มยกเลิกการเลือกเครื่องพิมพ์ จะไม่ทำอะไร
                     return; 
                 } else if (err.name === 'SecurityError') { 
                     alert('บลูทูธถูกบล็อก! กรุณาอนุญาตสิทธิ์ในเบราว์เซอร์\n(บนมือถือต้องเปิด GPS ด้วยครับ)'); 
