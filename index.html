@@ -105,7 +105,6 @@
       </div>
 
       <main class="flex-1 overflow-x-hidden overflow-y-auto bg-[#f1f5f9] p-4 md:p-8 relative">
-
         <div id="view-dashboard" class="view-section space-y-6 opacity-0 transition-opacity duration-300">
           <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
              <div><h2 class="text-2xl font-bold text-slate-800">ภาพรวมธุรกิจ</h2><p class="text-slate-500 text-sm">สรุปข้อมูลล่าสุดของคุณ</p></div>
@@ -143,13 +142,11 @@
               <div class="absolute right-0 top-0 opacity-10 transform translate-x-2 -translate-y-2"><i class="fa-solid fa-chart-line text-9xl"></i></div>
               <p class="text-indigo-100 text-xs font-medium mb-1">ยอดขายรวม</p>
               <h3 class="text-2xl md:text-3xl font-bold" id="kpi-sales">0 ฿</h3>
-              <div class="mt-4 text-[10px] md:text-xs text-indigo-100 bg-white/20 inline-block px-2 py-1 rounded">รายได้ (Income)</div>
             </div>
             <div class="bg-rose-500 p-5 rounded-2xl shadow-lg hover-card text-white relative overflow-hidden">
               <div class="absolute right-0 top-0 opacity-10 transform translate-x-2 -translate-y-2"><i class="fa-solid fa-cart-shopping text-9xl"></i></div>
               <p class="text-rose-100 text-xs font-medium mb-1">ต้นทุนรวม</p>
               <h3 class="text-2xl md:text-3xl font-bold" id="kpi-cost">0 ฿</h3>
-              <div class="mt-4 text-[10px] md:text-xs text-rose-100 bg-white/20 inline-block px-2 py-1 rounded">รายจ่าย (Expense)</div>
             </div>
             <div class="bg-white p-5 rounded-2xl shadow-lg hover-card border border-slate-100 relative overflow-hidden">
               <div class="flex justify-between items-start">
@@ -157,14 +154,13 @@
                   <div class="p-3 bg-emerald-100 text-emerald-600 rounded-xl"><i class="fa-solid fa-wallet text-xl"></i></div>
               </div>
               <div class="mt-4 h-1.5 w-full bg-slate-100 rounded-full overflow-hidden"><div id="profit-bar" class="h-full bg-emerald-500 rounded-full" style="width: 0%"></div></div>
-              <p class="text-[10px] md:text-xs text-slate-400 mt-2 text-right">Margin Analysis</p>
             </div>
           </div>
 
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="bg-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-sm border border-slate-200 lg:col-span-2">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-sm md:text-base text-slate-700">แนวโน้มรายได้ - ค่าใช้จ่าย</h3><span class="text-[10px] md:text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded">Real-time</span>
+                    <h3 class="font-bold text-sm md:text-base text-slate-700">แนวโน้มรายได้ - ค่าใช้จ่าย</h3>
                 </div>
                 <div class="h-64 md:h-72"><canvas id="chart-trend"></canvas></div>
             </div>
@@ -192,37 +188,37 @@
 
         <div id="view-transactions" class="view-section hidden space-y-4 md:space-y-6">
            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4">
-            <div><h2 class="text-xl md:text-2xl font-bold text-slate-800">รายการซื้อ-ขาย</h2><p class="text-xs md:text-sm text-slate-500">ประวัติการทำธุรกรรมทั้งหมด</p></div>
+            <div><h2 class="text-xl md:text-2xl font-bold text-slate-800">รายการซื้อ-ขาย</h2></div>
              <div class="flex bg-white p-1 rounded-lg md:rounded-xl border border-slate-200 shadow-sm text-xs md:text-sm">
-                <button onclick="app.filterType('all')" id="tab-all" class="px-3 md:px-5 py-1.5 md:py-2 rounded-md md:rounded-lg font-medium transition bg-slate-800 text-white shadow">ทั้งหมด</button>
-                <button onclick="app.filterType('ซื้อ')" id="tab-buy" class="px-3 md:px-5 py-1.5 md:py-2 rounded-md md:rounded-lg font-medium transition text-slate-500 hover:bg-slate-50">ซื้อ</button>
-                <button onclick="app.filterType('ขาย')" id="tab-sell" class="px-3 md:px-5 py-1.5 md:py-2 rounded-md md:rounded-lg font-medium transition text-slate-500 hover:bg-slate-50">ขาย</button>
+                <button onclick="app.filterType('all')" id="tab-all" class="px-3 md:px-5 py-1.5 md:py-2 rounded-md font-medium transition bg-slate-800 text-white shadow">ทั้งหมด</button>
+                <button onclick="app.filterType('ซื้อ')" id="tab-buy" class="px-3 md:px-5 py-1.5 md:py-2 rounded-md font-medium transition text-slate-500 hover:bg-slate-50">ซื้อ</button>
+                <button onclick="app.filterType('ขาย')" id="tab-sell" class="px-3 md:px-5 py-1.5 md:py-2 rounded-md font-medium transition text-slate-500 hover:bg-slate-50">ขาย</button>
              </div>
           </div>
           
            <div class="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-slate-200 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-12 gap-2 md:gap-3 items-end">
-             <div class="flex flex-col lg:col-span-1"><label class="text-[9px] md:text-[10px] text-indigo-600 font-bold mb-1">เฉพาะวันเดียว</label><input type="date" id="filter-single-date" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-indigo-200 rounded-md md:rounded-lg text-xs md:text-sm bg-slate-50 outline-none w-full"></div>
-             <div class="flex flex-col lg:col-span-1"><label class="text-[9px] md:text-[10px] text-slate-500 font-bold mb-1">ตั้งแต่วันที่</label><input type="date" id="filter-date-start" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md md:rounded-lg text-xs md:text-sm bg-slate-50 outline-none w-full"></div>
-             <div class="flex flex-col lg:col-span-1"><label class="text-[9px] md:text-[10px] text-slate-500 font-bold mb-1">ถึงวันที่</label><input type="date" id="filter-date-end" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md md:rounded-lg text-xs md:text-sm bg-slate-50 outline-none w-full"></div>
-             <div class="flex flex-col"><label class="text-[9px] md:text-[10px] text-slate-500 font-bold mb-1">ปี</label><select id="filter-year" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md md:rounded-lg text-xs md:text-sm bg-slate-50 outline-none w-full"></select></div>
+             <div class="flex flex-col lg:col-span-1"><label class="text-[9px] md:text-[10px] text-indigo-600 font-bold mb-1">เฉพาะวันเดียว</label><input type="date" id="filter-single-date" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-indigo-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full"></div>
+             <div class="flex flex-col lg:col-span-1"><label class="text-[9px] md:text-[10px] text-slate-500 font-bold mb-1">ตั้งแต่วันที่</label><input type="date" id="filter-date-start" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full"></div>
+             <div class="flex flex-col lg:col-span-1"><label class="text-[9px] md:text-[10px] text-slate-500 font-bold mb-1">ถึงวันที่</label><input type="date" id="filter-date-end" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full"></div>
+             <div class="flex flex-col"><label class="text-[9px] md:text-[10px] text-slate-500 font-bold mb-1">ปี</label><select id="filter-year" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full"></select></div>
              <div class="flex flex-col"><label class="text-[9px] md:text-[10px] text-slate-500 font-bold mb-1">เดือน</label>
-                 <select id="filter-month" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md md:rounded-lg text-xs md:text-sm bg-slate-50 outline-none w-full">
+                 <select id="filter-month" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full">
                     <option value="all">ทุกเดือน</option><option value="0">ม.ค.</option><option value="1">ก.พ.</option><option value="2">มี.ค.</option><option value="3">เม.ย.</option><option value="4">พ.ค.</option><option value="5">มิ.ย.</option><option value="6">ก.ค.</option><option value="7">ส.ค.</option><option value="8">ก.ย.</option><option value="9">ต.ค.</option><option value="10">พ.ย.</option><option value="11">ธ.ค.</option>
                  </select>
              </div>
-             <div class="flex flex-col"><label class="text-[9px] md:text-[10px] text-slate-500 font-bold mb-1">วันที่</label><select id="filter-day" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md md:rounded-lg text-xs md:text-sm bg-slate-50 outline-none w-full"></select></div>
+             <div class="flex flex-col"><label class="text-[9px] md:text-[10px] text-slate-500 font-bold mb-1">วันที่</label><select id="filter-day" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full"></select></div>
              <div class="flex flex-col"><label class="text-[9px] md:text-[10px] text-slate-500 font-bold mb-1">สัปดาห์</label>
-                 <select id="filter-week" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md md:rounded-lg text-xs md:text-sm bg-slate-50 outline-none w-full">
+                 <select id="filter-week" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full">
                     <option value="all">ทุกสัปดาห์</option><option value="1">WK 1</option><option value="2">WK 2</option><option value="3">WK 3</option><option value="4">WK 4</option><option value="5">WK 5</option>
                  </select>
              </div>
              <div class="flex flex-col"><label class="text-[9px] md:text-[10px] text-slate-500 font-bold mb-1">แสดงผล</label>
-                 <select id="rows-per-page" class="p-1.5 md:p-2 border border-slate-200 rounded-md md:rounded-lg text-xs md:text-sm bg-slate-50 outline-none w-full">
+                 <select id="rows-per-page" class="p-1.5 md:p-2 border border-slate-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full">
                      <option value="15">15 แถว</option><option value="30">30 แถว</option><option value="50">50 แถว</option><option value="100">100 แถว</option>
                  </select>
              </div>
              <div class="col-span-2 lg:col-span-3 relative">
-                <input type="text" id="search-input" placeholder="ค้นหาชื่อ, หมวดหมู่..." class="w-full pl-9 pr-3 py-1.5 md:pl-10 md:pr-4 md:py-2 rounded-md md:rounded-lg border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none text-xs md:text-sm">
+                <input type="text" id="search-input" placeholder="ค้นหาชื่อ, หมวดหมู่..." class="w-full pl-9 pr-3 py-1.5 md:pl-10 md:pr-4 md:py-2 rounded-md border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none text-xs md:text-sm">
                 <i class="fa-solid fa-search absolute left-3 top-2.5 md:top-3 text-slate-400 text-xs md:text-sm"></i>
              </div>
           </div>
@@ -230,14 +226,14 @@
           <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             <div class="overflow-x-auto mobile-scroll-hint">
               <table class="w-full text-left border-collapse min-w-[700px]">
-                <thead class="bg-slate-50 text-slate-600 uppercase text-[10px] md:text-xs select-none tracking-wider">
+                <thead class="bg-slate-50 text-slate-600 uppercase text-[10px] md:text-xs tracking-wider">
                   <tr>
-                    <th class="p-3 md:p-4 font-bold cursor-pointer hover:text-indigo-600" onclick="app.sortData('date')">วันที่ <i class="fa-solid fa-sort ml-1 text-slate-300"></i></th>
-                    <th class="p-3 md:p-4 font-bold cursor-pointer hover:text-indigo-600" onclick="app.sortData('type')">ประเภท <i class="fa-solid fa-sort ml-1 text-slate-300"></i></th>
-                    <th class="p-3 md:p-4 font-bold cursor-pointer hover:text-indigo-600" onclick="app.sortData('product')">สินค้า <i class="fa-solid fa-sort ml-1 text-slate-300"></i></th>
-                    <th class="p-3 md:p-4 font-bold text-right cursor-pointer hover:text-indigo-600" onclick="app.sortData('price')">ราคา <i class="fa-solid fa-sort ml-1 text-slate-300"></i></th>
-                    <th class="p-3 md:p-4 font-bold text-right cursor-pointer hover:text-indigo-600" onclick="app.sortData('quantity')">จำนวน <i class="fa-solid fa-sort ml-1 text-slate-300"></i></th>
-                    <th class="p-3 md:p-4 font-bold text-right cursor-pointer hover:text-indigo-600" onclick="app.sortData('total')">รวม <i class="fa-solid fa-sort ml-1 text-slate-300"></i></th>
+                    <th class="p-3 md:p-4 font-bold cursor-pointer hover:text-indigo-600" onclick="app.sortData('date')">วันที่ <i class="fa-solid fa-sort ml-1"></i></th>
+                    <th class="p-3 md:p-4 font-bold cursor-pointer hover:text-indigo-600" onclick="app.sortData('type')">ประเภท <i class="fa-solid fa-sort ml-1"></i></th>
+                    <th class="p-3 md:p-4 font-bold cursor-pointer hover:text-indigo-600" onclick="app.sortData('product')">สินค้า <i class="fa-solid fa-sort ml-1"></i></th>
+                    <th class="p-3 md:p-4 font-bold text-right cursor-pointer hover:text-indigo-600" onclick="app.sortData('price')">ราคา <i class="fa-solid fa-sort ml-1"></i></th>
+                    <th class="p-3 md:p-4 font-bold text-right cursor-pointer hover:text-indigo-600" onclick="app.sortData('quantity')">จำนวน <i class="fa-solid fa-sort ml-1"></i></th>
+                    <th class="p-3 md:p-4 font-bold text-right cursor-pointer hover:text-indigo-600" onclick="app.sortData('total')">รวม <i class="fa-solid fa-sort ml-1"></i></th>
                     <th class="p-3 md:p-4 font-bold text-center">จัดการ</th>
                   </tr>
                 </thead>
@@ -249,10 +245,10 @@
         </div>
 
         <div id="view-stock" class="view-section hidden space-y-4 md:space-y-6">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4">
-             <div><h2 class="text-xl md:text-2xl font-bold text-slate-800">สต็อกสินค้าคงเหลือ</h2><p class="text-xs md:text-sm text-slate-500">สถานะสินค้าล่าสุด</p></div>
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+             <div><h2 class="text-xl md:text-2xl font-bold text-slate-800">สต็อกสินค้าคงเหลือ</h2></div>
              <div class="relative w-full md:w-72">
-                <input type="text" id="stock-search-input" placeholder="ค้นหาสต็อก (ชื่อ/หมวดหมู่)..." class="w-full pl-9 pr-3 py-1.5 md:pl-10 md:pr-4 md:py-2 rounded-md md:rounded-lg border border-slate-200 bg-white shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none text-xs md:text-sm">
+                <input type="text" id="stock-search-input" placeholder="ค้นหาสต็อก..." class="w-full pl-9 pr-3 py-1.5 md:pl-10 md:pr-4 md:py-2 rounded-md border border-slate-200 bg-white shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none text-xs md:text-sm">
                 <i class="fa-solid fa-search absolute left-3 top-2.5 md:top-3 text-slate-400 text-xs md:text-sm"></i>
              </div>
           </div>
@@ -276,7 +272,7 @@
                 <option value="ซื้อ">ซื้อ (ทุน)</option>
                 <option value="ขาย">ขาย (รายได้)</option>
             </select>
-            <button onclick="app.closeMultiModal()" class="text-slate-400 hover:text-white bg-white/10 hover:bg-rose-500/50 p-1.5 rounded w-8 h-8 flex items-center justify-center transition ml-1"><i class="fa-solid fa-times text-base"></i></button>
+            <button onclick="app.closeMultiModal()" class="text-slate-400 hover:text-white p-1 ml-2"><i class="fa-solid fa-times text-xl"></i></button>
          </div>
       </div>
       
@@ -286,7 +282,7 @@
       </div>
 
       <div class="flex-1 overflow-y-auto p-2 md:p-4 bg-slate-100" id="multi-scroll-area">
-          <div class="hidden md:flex bg-slate-200 border border-slate-300 rounded-t-lg text-[10px] text-slate-600 font-bold uppercase p-2 border-b">
+         <div class="hidden md:flex bg-slate-200 border border-slate-300 rounded-t-lg text-[10px] text-slate-600 font-bold uppercase p-2 border-b">
              <div class="w-8 text-center">#</div>
              <div class="flex-1 px-2">สินค้า</div>
              <div class="w-40 px-2">หมวดหมู่</div> 
@@ -294,10 +290,11 @@
              <div class="w-20 px-2 text-right">จำนวน</div>
              <div class="w-16 px-2 text-center">หน่วย</div>
              <div class="w-24 px-2 text-right">รวม</div>
-             <div class="w-8"></div>
+             <div class="w-8 text-center"><i class="fa-solid fa-trash"></i></div>
          </div>
-         </div>
+         
          <div id="multi-items-body" class="flex flex-col gap-2 md:gap-0 md:bg-white md:border md:border-t-0 md:border-slate-300 md:rounded-b-lg overflow-hidden pb-1 md:pb-0"></div>
+         
          <button onclick="app.addMultiRow()" class="mt-2 md:mt-4 w-full py-3 border-2 border-dashed border-indigo-300 text-indigo-600 bg-white md:bg-indigo-50/50 rounded-xl md:rounded-lg font-bold text-sm transition hover:bg-indigo-100 flex items-center justify-center gap-2 shadow-sm">
             <i class="fa-solid fa-plus-circle text-base"></i> เพิ่มแถวสินค้า
          </button>
@@ -321,18 +318,13 @@
   </div>
 
   <div id="modal-edit" class="fixed inset-0 bg-slate-900/80 hidden z-[130] flex items-center justify-center p-4 backdrop-blur-sm">
-     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-4 md:p-6 transform transition-all">
+     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-4 md:p-6">
         <h3 class="font-bold text-base md:text-lg mb-3 md:mb-4 text-slate-800 border-b pb-2">แก้ไขรายการ</h3>
         <input type="hidden" id="edit-id">
         <div class="space-y-3">
            <div class="grid grid-cols-2 gap-3">
               <div><label class="text-[10px] md:text-xs font-bold text-slate-500">วันที่</label><input type="date" id="edit-date" class="modal-input border border-slate-300 p-1.5 md:p-2 rounded-lg w-full mt-0.5 outline-none focus:ring-2 focus:ring-indigo-500"></div>
-              <div>
-                  <label class="text-[10px] md:text-xs font-bold text-slate-500">ประเภท</label>
-                  <select id="edit-type" class="modal-input border border-slate-300 p-1.5 md:p-2 rounded-lg w-full mt-0.5 outline-none focus:ring-2 focus:ring-indigo-500">
-                      <option value="ขาย">ขาย</option><option value="ซื้อ">ซื้อ</option>
-                  </select>
-              </div>
+              <div><label class="text-[10px] md:text-xs font-bold text-slate-500">ประเภท</label><select id="edit-type" class="modal-input border border-slate-300 p-1.5 md:p-2 rounded-lg w-full mt-0.5 outline-none focus:ring-2 focus:ring-indigo-500"><option value="ขาย">ขาย</option><option value="ซื้อ">ซื้อ</option></select></div>
            </div>
            <div><label class="text-[10px] md:text-xs font-bold text-slate-500">หมวดหมู่</label><input type="text" id="edit-category" class="modal-input border border-slate-300 p-1.5 md:p-2 rounded-lg w-full mt-0.5 outline-none focus:ring-2 focus:ring-indigo-500"></div>
            <div><label class="text-[10px] md:text-xs font-bold text-slate-500">สินค้า</label><input type="text" id="edit-product" class="modal-input border border-slate-300 p-1.5 md:p-2 rounded-lg w-full mt-0.5 outline-none focus:ring-2 focus:ring-indigo-500"></div>
@@ -355,9 +347,8 @@
   // =======================================================================
   // 🔴 🔴 🔴 เอา URL ของ Web App จาก Google Apps Script มาใส่ตรงนี้ 🔴 🔴 🔴
   // =======================================================================
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ3Z36H2V5mbmVIN_Rj0x4NgM-swfwp2xvOY8IbbTDd_NvZqbssKXXVmuIKXxR0t0/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ3Z36H2V5mbmVIN_Rj0x4NgM-swfwp2xvOY8IbbTDd_NvZqbssKXXVmuIKXxR0t0/exec'; 
 
-  // ฟังก์ชันยิง API ไปหา Google Sheets
   async function callAPI(action, data = null) {
     try {
       const response = await fetch(SCRIPT_URL, {
@@ -368,16 +359,12 @@
       const result = await response.json();
       if (result.error) throw new Error(result.error);
       return result;
-    } catch (err) {
-      throw err;
-    }
+    } catch (err) { throw err; }
   }
 
   const app = {
-    // --- STATE ---
     data: [], categories: [], products: [], filteredData: [], currentPage: 1, rowsPerPage: 15, currentTab: 'all', sortCol: 'date', sortAsc: false, charts: { trend: null, cat: null }, activeInput: null, lastReceiptData: null,
 
-    // --- INIT ---
     init: function() {
       setTimeout(() => { const l = document.getElementById('loader'); if (l) { l.style.opacity = '0'; setTimeout(() => l.classList.add('hidden'), 500); } }, 50);
 
@@ -417,11 +404,8 @@
         }
     },
 
-    toggleMobileMenu: function() {
-        document.getElementById('mobile-menu').classList.toggle('hidden');
-    },
+    toggleMobileMenu: function() { document.getElementById('mobile-menu').classList.toggle('hidden'); },
 
-    // --- DATA FETCHING ---
     fetchData: function() {
       callAPI('getInitialData').then(res => {
           this.data = res.transactions;
@@ -435,9 +419,7 @@
           this.products = [...new Set(this.data.map(t => t.product))].filter(String).sort((a, b) => pCounts[b] - pCounts[a]);
 
           this.populateYearFilters(); this.populateDayFilters();
-
-          const today = new Date();
-          const yEl = document.getElementById('dash-year'); const mEl = document.getElementById('dash-month');
+          const today = new Date(); const yEl = document.getElementById('dash-year'); const mEl = document.getElementById('dash-month');
           if(yEl) yEl.value = today.getFullYear(); if(mEl) mEl.value = today.getMonth();
 
           this.renderDashboard(); this.applyFilters(); this.renderStock();
@@ -470,7 +452,6 @@
       if(viewId === 'dashboard') { if(target) target.classList.remove('opacity-0'); this.renderDashboard(); }
     },
 
-    // --- DASHBOARD ---
     renderDashboard: function() {
       const yEl = document.getElementById('dash-year'); const mEl = document.getElementById('dash-month');
       const dDropEl = document.getElementById('dash-day'); const wEl = document.getElementById('dash-week');
@@ -484,9 +465,7 @@
 
       const filtered = this.data.filter(t => {
         const d = new Date(t.date); const tTime = d.getTime(); const tDateOnly = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-        if (dSingle && tDateOnly !== dSingle) return false;
-        if (dStart && tTime < dStart) return false;
-        if (dEnd && tTime > dEnd) return false;
+        if (dSingle && tDateOnly !== dSingle) return false; if (dStart && tTime < dStart) return false; if (dEnd && tTime > dEnd) return false;
         const matchY = y === 'all' || d.getFullYear() == y; const matchM = m === 'all' || d.getMonth() == m;
         const matchD = dDrop === 'all' || d.getDate() == dDrop; const matchW = w === 'all' || this.getWeekOfMonth(d) == w;
         return matchY && matchM && matchD && matchW;
@@ -523,20 +502,16 @@
     renderCharts: function(data) {
       const ctxTrend = document.getElementById('chart-trend').getContext('2d');
       if (this.charts.trend) { this.charts.trend.destroy(); }
-
       const groupedData = {};
       data.forEach(t => {
         const d = new Date(t.date);
         const isYearView = document.getElementById('dash-month').value === 'all';
         const key = isYearView ? `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}` : `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
         if (!groupedData[key]) groupedData[key] = { sales: 0, cost: 0 };
-        if (t.type === 'ขาย') { groupedData[key].sales += t.total; }
-        if (t.type === 'ซื้อ') { groupedData[key].cost += t.total; }
+        if (t.type === 'ขาย') { groupedData[key].sales += t.total; } if (t.type === 'ซื้อ') { groupedData[key].cost += t.total; }
       });
-
       const sortedKeys = Object.keys(groupedData).sort();
       const labels = sortedKeys.map(k => { const parts = k.split('-'); return parts.length === 3 ? `${parts[2]}/${parts[1]}` : `${parts[1]}/${parts[0]}`; });
-
       this.charts.trend = new Chart(ctxTrend, {
         type: 'bar',
         data: { labels: labels, datasets: [ { label: 'รายได้', data: sortedKeys.map(k => groupedData[k].sales), backgroundColor: '#4f46e5', borderRadius: 4 }, { label: 'รายจ่าย', data: sortedKeys.map(k => groupedData[k].cost), backgroundColor: '#f43f5e', borderRadius: 4 } ] },
@@ -545,11 +520,8 @@
 
       const ctxCat = document.getElementById('chart-category').getContext('2d');
       if (this.charts.cat) { this.charts.cat.destroy(); }
-      
-      const productSales = {};
-      data.filter(t => t.type === 'ขาย').forEach(t => { productSales[t.product] = (productSales[t.product] || 0) + t.total; });
+      const productSales = {}; data.filter(t => t.type === 'ขาย').forEach(t => { productSales[t.product] = (productSales[t.product] || 0) + t.total; });
       const topProducts = Object.entries(productSales).sort((a,b) => b[1] - a[1]).slice(0, 5);
-
       this.charts.cat = new Chart(ctxCat, {
         type: 'doughnut', 
         data: { labels: topProducts.map(p => p[0]), datasets: [{ data: topProducts.map(p => p[1]), backgroundColor: ['#4f46e5', '#f43f5e', '#0ea5e9', '#8b5cf6', '#10b981'], borderWidth: 0 }] },
@@ -557,18 +529,16 @@
       });
     },
 
-    // --- LIST / FILTER ---
     filterType: function(type) {
       this.currentTab = type; this.currentPage = 1;
       ['all', 'buy', 'sell'].forEach(t => {
          let btnId = 'tab-all'; if(t === 'buy') btnId = 'tab-buy'; if(t === 'sell') btnId = 'tab-sell';
          const btn = document.getElementById(btnId);
-         if(btn) { btn.className = "flex-1 md:flex-none px-3 md:px-5 py-2 md:py-2 rounded-md md:rounded-lg font-medium transition text-slate-500 hover:bg-slate-50"; }
+         if(btn) { btn.className = "flex-1 md:flex-none px-3 md:px-5 py-2 md:py-2 rounded-md font-medium transition text-slate-500 hover:bg-slate-50"; }
       });
-
       let activeId = 'tab-all'; if(type === 'ซื้อ') activeId = 'tab-buy'; if(type === 'ขาย') activeId = 'tab-sell';
       const activeBtn = document.getElementById(activeId);
-      if(activeBtn) { activeBtn.className = "flex-1 md:flex-none px-3 md:px-5 py-2 md:py-2 rounded-md md:rounded-lg font-medium transition bg-slate-800 text-white shadow"; }
+      if(activeBtn) { activeBtn.className = "flex-1 md:flex-none px-3 md:px-5 py-2 md:py-2 rounded-md font-medium transition bg-slate-800 text-white shadow"; }
       this.applyFilters();
     },
 
@@ -606,26 +576,19 @@
         if(vA < vB) return this.sortAsc ? -1 : 1; if(vA > vB) return this.sortAsc ? 1 : -1; return 0;
       });
 
-      this.filteredData = temp;
-      this.renderTable();
+      this.filteredData = temp; this.renderTable();
     },
 
     renderTable: function() {
       const tbody = document.getElementById('table-transactions');
-      if(!tbody) return;
-      tbody.innerHTML = '';
-      const start = (this.currentPage - 1) * this.rowsPerPage;
-      const pageData = this.filteredData.slice(start, start + this.rowsPerPage);
+      if(!tbody) return; tbody.innerHTML = '';
+      const start = (this.currentPage - 1) * this.rowsPerPage; const pageData = this.filteredData.slice(start, start + this.rowsPerPage);
 
       if(pageData.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">ไม่พบข้อมูล</td></tr>`; this.renderPagination(0); return; }
 
       pageData.forEach(t => {
-        const badge = t.type === 'ขาย' 
-          ? `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold">ขาย</span>` 
-          : `<span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded text-[10px] font-bold">ซื้อ</span>`;
-        
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 border-b border-slate-100 transition text-xs md:text-sm whitespace-nowrap md:whitespace-normal";
+        const badge = t.type === 'ขาย' ? `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold">ขาย</span>` : `<span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded text-[10px] font-bold">ซื้อ</span>`;
+        const tr = document.createElement('tr'); tr.className = "hover:bg-slate-50 border-b border-slate-100 transition text-xs md:text-sm whitespace-nowrap md:whitespace-normal";
         tr.innerHTML = `
             <td class="p-3 md:p-4 text-slate-500">${new Date(t.date).toLocaleDateString('th-TH')}</td>
             <td class="p-3 md:p-4">${badge}</td>
@@ -645,14 +608,10 @@
 
     renderPagination: function(totalPages) {
         const div = document.getElementById('pagination');
-        if(!div) return;
-        if(totalPages === 0) { div.innerHTML=''; return; }
-        div.innerHTML = `
-        <span>หน้า ${this.currentPage}/${totalPages} (${this.filteredData.length} รายการ)</span>
-        <div class="space-x-1">
-            <button onclick="app.changePage(-1)" class="px-3 py-1 border border-slate-200 rounded hover:bg-slate-100 transition" ${this.currentPage===1?'disabled':''}>ก่อนหน้า</button>
-            <button onclick="app.changePage(1)" class="px-3 py-1 border border-slate-200 rounded hover:bg-slate-100 transition" ${this.currentPage>=totalPages?'disabled':''}>ถัดไป</button>
-        </div>`;
+        if(!div) return; if(totalPages === 0) { div.innerHTML=''; return; }
+        div.innerHTML = `<span>หน้า ${this.currentPage}/${totalPages} (${this.filteredData.length} รายการ)</span>
+        <div class="space-x-1"><button onclick="app.changePage(-1)" class="px-3 py-1 border border-slate-200 rounded hover:bg-slate-100 transition" ${this.currentPage===1?'disabled':''}>ก่อนหน้า</button>
+        <button onclick="app.changePage(1)" class="px-3 py-1 border border-slate-200 rounded hover:bg-slate-100 transition" ${this.currentPage>=totalPages?'disabled':''}>ถัดไป</button></div>`;
     },
     changePage: function(d) { this.currentPage += d; this.renderTable(); },
     getWeekOfMonth: function(date) { return Math.ceil(new Date(date).getDate() / 7); },
@@ -661,22 +620,15 @@
     openMultiModal: function() {
         document.getElementById('modal-multi').classList.remove('hidden');
         document.getElementById('multi-items-body').innerHTML = '';
-
-        const typeSelect = document.getElementById('multi-type');
-        typeSelect.value = 'ซื้อ';
+        const typeSelect = document.getElementById('multi-type'); typeSelect.value = 'ซื้อ';
         typeSelect.className = "modal-input border border-slate-300 rounded shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-rose-600 w-28 md:w-40";
-
         typeSelect.onchange = function() {
             if(this.value === 'ขาย') { this.className = "modal-input border border-slate-300 rounded shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-emerald-600 w-28 md:w-40"; } 
             else { this.className = "modal-input border border-slate-300 rounded shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-rose-600 w-28 md:w-40"; }
         };
-
-        this.addMultiRow();
-        this.updateInfoDashboard(null);
-
+        this.addMultiRow(); this.updateInfoDashboard(null);
         document.getElementById('multi-grand-total').textContent = '0.00';
-        const dateInput = document.getElementById('multi-date');
-        if(dateInput) { dateInput.valueAsDate = new Date(); }
+        const dateInput = document.getElementById('multi-date'); if(dateInput) { dateInput.valueAsDate = new Date(); }
     },
     closeMultiModal: function() { document.getElementById('modal-multi').classList.add('hidden'); },
 
@@ -689,14 +641,11 @@
         this.activeInput = input;
         const dropdown = document.getElementById('global-dropdown');
         const rect = input.getBoundingClientRect();
-        dropdown.style.top = (rect.bottom + 5) + 'px';
-        dropdown.style.left = rect.left + 'px';
-        dropdown.style.width = rect.width + 'px';
+        dropdown.style.top = (rect.bottom + 5) + 'px'; dropdown.style.left = rect.left + 'px'; dropdown.style.width = rect.width + 'px';
 
         let items = [];
         if (type === 'cat') { items = this.categories; } else {
-            const row = input.closest('.multi-row');
-            const catVal = row.querySelector('[name="cat"]').value.trim();
+            const row = input.closest('.multi-row'); const catVal = row.querySelector('[name="cat"]').value.trim();
             if (catVal) {
                 const catData = this.data.filter(t => t.category === catVal);
                 const pCountsLocal = {}; catData.forEach(t => { pCountsLocal[t.product] = (pCountsLocal[t.product] || 0) + 1; });
@@ -704,14 +653,11 @@
                 items = productsInCat.length > 0 ? productsInCat : this.products;
             } else { items = this.products; }
         }
-        
-        this.renderDropdownItems(items, type);
-        dropdown.style.display = 'block';
+        this.renderDropdownItems(items, type); dropdown.style.display = 'block';
     },
 
     renderDropdownItems: function(items, type) {
-        const dropdown = document.getElementById('global-dropdown');
-        const title = type === 'cat' ? 'หมวดหมู่' : 'สินค้า';
+        const dropdown = document.getElementById('global-dropdown'); const title = type === 'cat' ? 'หมวดหมู่' : 'สินค้า';
         let html = `<div class="p-3 border-b border-slate-200 bg-indigo-50 text-indigo-700 font-bold hover:bg-indigo-100 cursor-pointer transition flex items-center gap-2 text-sm" onclick="app.promptAddNew('${type}')"><i class="fa-solid fa-plus-circle"></i> เพิ่ม${title}ใหม่...</div>`;
         if (items.length === 0) { html += `<div class="p-3 text-slate-400 text-sm text-center">ไม่มีข้อมูลเดิมในระบบ</div>`; } 
         else { html += items.map(item => `<div class="dropdown-item text-sm py-3 md:py-2" onclick="app.selectItem('${item.replace(/'/g, "\\'")}', '${type}')">${item}</div>`).join(''); }
@@ -719,128 +665,98 @@
     },
 
     promptAddNew: function(type) {
-        const currentInput = this.activeInput; 
-        document.getElementById('global-dropdown').style.display = 'none';
+        const currentInput = this.activeInput; document.getElementById('global-dropdown').style.display = 'none';
         const title = type === 'cat' ? 'หมวดหมู่' : 'สินค้า';
         Swal.fire({
             title: `เพิ่ม${title}ใหม่`, input: 'text', inputPlaceholder: `พิมพ์ชื่อ${title}ที่นี่...`,
             showCancelButton: true, confirmButtonText: 'ตกลง', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#4f46e5',
         }).then((result) => {
-            if (result.isConfirmed && result.value) {
-                if (currentInput) {
-                    currentInput.value = result.value.trim();
-                    if(type === 'prod') { const row = currentInput.closest('.multi-row'); row.querySelector('[name="price"]').value = ''; this.updateInfoDashboard(null); }
-                }
+            if (result.isConfirmed && result.value && currentInput) {
+                currentInput.value = result.value.trim();
+                if(type === 'prod') { const row = currentInput.closest('.multi-row'); row.querySelector('[name="price"]').value = ''; this.updateInfoDashboard(null); }
             }
             this.activeInput = null;
         });
     },
 
-selectItem: function(val, type) {
+    selectItem: function(val, type) {
         if (!this.activeInput) return;
-        this.activeInput.value = val;
-        document.getElementById('global-dropdown').style.display = 'none';
-
+        this.activeInput.value = val; document.getElementById('global-dropdown').style.display = 'none';
         if (type === 'prod') {
-            // อัปเดตข้อมูลแถบด้านล่าง
-            this.updateInfoDashboard(val);
-            
-            const row = this.activeInput.closest('.multi-row');
-            
-            // 1. ค้นหาประวัติสินค้าจากฐานข้อมูล
+            this.updateInfoDashboard(val); const row = this.activeInput.closest('.multi-row');
             const history = this.data.find(t => t.product === val);
-            
             if (history) {
-                // 2. เติมหมวดหมู่ให้อัตโนมัติ
-                const catInput = row.querySelector('[name="cat"]');
-                if (catInput) catInput.value = history.category || '';
-
-                // 3. เติมหน่วยสินค้า (ถ้าช่องยังว่างอยู่)
-                const unitInput = row.querySelector('[name="unit"]');
-                if (unitInput && !unitInput.value) { 
-                    unitInput.value = history.unit || 'ชิ้น'; 
-                }
-
-                // 4. เติมราคาล่าสุด (อัปเกรดใหม่: ดึงให้ทั้งตอน 'ซื้อ' และ 'ขาย')
+                const catInput = row.querySelector('[name="cat"]'); if (catInput) catInput.value = history.category || '';
+                const unitInput = row.querySelector('[name="unit"]'); if (unitInput && !unitInput.value) { unitInput.value = history.unit || 'ชิ้น'; }
                 const currentType = document.getElementById('multi-type').value;
                 const priceInput = row.querySelector('[name="price"]');
-                
-                // หาประวัติล่าสุดที่ตรงกับประเภทบิลปัจจุบัน
                 const lastRecord = this.data.filter(t => t.product === val && t.type === currentType).sort((a,b) => b.date - a.date)[0];
-                
-                if (lastRecord && priceInput) { 
-                    priceInput.value = lastRecord.price; 
-                    this.calcMultiTotal(); // คำนวณยอดรวมใหม่ทันที
-                }
+                if (lastRecord && priceInput) { priceInput.value = lastRecord.price; this.calcMultiTotal(); }
             }
         }
         this.activeInput = null;
-    },addMultiRow: function() {
-          const tbody = document.getElementById('multi-items-body');
-          const rowIdx = tbody.children.length + 1;
-          const rowId = Date.now() + Math.random();
+    },
 
-          const div = document.createElement('div');
-          // จัด Grid มือถือใหม่เป็น 3 คอลัมน์ เพื่อให้ ราคา-จำนวน-หน่วย อยู่บรรทัดเดียวกัน
-          div.className = "multi-row relative bg-white p-3 md:p-1 border border-slate-200 md:border-b md:border-x-0 md:border-t-0 rounded-xl md:rounded-none mb-3 md:mb-0 shadow-sm md:shadow-none transition-all";
-          
-          div.innerHTML = `
-             <div class="flex justify-between md:hidden mb-2 pb-2 border-b border-slate-100">
-                <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">รายการที่ ${rowIdx}</span>
-                <button onclick="this.closest('.multi-row').remove();app.calcMultiTotal()" class="text-white bg-rose-500 w-6 h-6 flex items-center justify-center rounded-full shadow"><i class="fa-solid fa-times"></i></button>
-             </div>
-             <div class="grid grid-cols-3 md:flex md:flex-row md:items-center gap-2 md:gap-0">
-                <div class="hidden md:block w-8 text-center text-slate-400 text-[10px]">${rowIdx}</div>
-                
-                <div class="col-span-3 md:flex-1 md:px-1 relative">
-                   <label class="md:hidden text-[10px] text-slate-400 font-bold ml-1">ชื่อสินค้า</label>
-                   ${this.createInputHTML('prod', rowId)}
-                </div>
-                
-                <div class="col-span-3 md:w-40 md:px-1">
-                   <label class="md:hidden text-[10px] text-slate-400 font-bold ml-1">หมวดหมู่</label>
-                   ${this.createInputHTML('cat', rowId)}
-                </div>
+    addMultiRow: function() {
+        const tbody = document.getElementById('multi-items-body');
+        const rowIdx = tbody.children.length + 1; const rowId = Date.now() + Math.random();
+        const div = document.createElement('div');
+        div.className = "multi-row relative bg-white p-3 md:p-1 border border-slate-200 md:border-b md:border-x-0 md:border-t-0 rounded-xl md:rounded-none mb-3 md:mb-0 shadow-sm md:shadow-none transition-all";
+        
+        div.innerHTML = `
+           <div class="flex justify-between md:hidden mb-2 pb-2 border-b border-slate-100">
+              <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">รายการที่ ${rowIdx}</span>
+              <button onclick="this.closest('.multi-row').remove();app.calcMultiTotal()" class="text-white bg-rose-500 w-6 h-6 flex items-center justify-center rounded-full shadow"><i class="fa-solid fa-times"></i></button>
+           </div>
+           <div class="grid grid-cols-3 md:flex md:flex-row md:items-center gap-2 md:gap-0">
+              <div class="hidden md:block w-8 text-center text-slate-400 text-[10px]">${rowIdx}</div>
+              
+              <div class="col-span-3 md:flex-1 md:px-1 relative">
+                 <label class="md:hidden text-[10px] text-slate-400 font-bold ml-1">ชื่อสินค้า</label>
+                 ${this.createInputHTML('prod', rowId)}
+              </div>
+              
+              <div class="col-span-3 md:w-40 md:px-1">
+                 <label class="md:hidden text-[10px] text-slate-400 font-bold ml-1">หมวดหมู่</label>
+                 ${this.createInputHTML('cat', rowId)}
+              </div>
 
-                <div class="col-span-1 md:w-20 md:px-1">
-                   <label class="md:hidden text-[10px] text-slate-400 font-bold ml-1">ราคา</label>
-                   <input type="number" inputmode="decimal" name="price" class="modal-input w-full border border-slate-300 rounded-lg md:rounded text-right outline-none focus:ring-2 focus:ring-indigo-500 transition" step="0.01" oninput="app.calcMultiTotal()" onclick="this.select()">
-                </div>
+              <div class="col-span-1 md:w-20 md:px-1">
+                 <label class="md:hidden text-[10px] text-slate-400 font-bold ml-1">ราคา</label>
+                 <input type="number" inputmode="decimal" name="price" class="modal-input w-full border border-slate-300 rounded-lg md:rounded text-right outline-none focus:ring-2 focus:ring-indigo-500 transition" step="0.01" oninput="app.calcMultiTotal()" onclick="this.select()">
+              </div>
 
-                <div class="col-span-1 md:w-20 md:px-1">
-                   <label class="md:hidden text-[10px] text-slate-400 font-bold ml-1">จำนวน</label>
-                   <input type="number" inputmode="decimal" name="qty" class="modal-input w-full border border-slate-300 rounded-lg md:rounded text-right outline-none focus:ring-2 focus:ring-indigo-500 transition" step="0.01" oninput="app.calcMultiTotal()" onclick="this.select()">
-                </div>
+              <div class="col-span-1 md:w-20 md:px-1">
+                 <label class="md:hidden text-[10px] text-slate-400 font-bold ml-1">จำนวน</label>
+                 <input type="number" inputmode="decimal" name="qty" class="modal-input w-full border border-slate-300 rounded-lg md:rounded text-right outline-none focus:ring-2 focus:ring-indigo-500 transition" step="0.01" oninput="app.calcMultiTotal()" onclick="this.select()">
+              </div>
 
-                <div class="col-span-1 md:w-16 md:px-1">
-                   <label class="md:hidden text-[10px] text-slate-400 font-bold ml-1">หน่วย</label>
-                   <input type="text" name="unit" class="modal-input w-full border border-slate-300 rounded-lg md:rounded text-center outline-none focus:ring-2 focus:ring-indigo-500 transition" placeholder="หน่วย" onclick="this.select()">
-                </div>
+              <div class="col-span-1 md:w-16 md:px-1">
+                 <label class="md:hidden text-[10px] text-slate-400 font-bold ml-1">หน่วย</label>
+                 <input type="text" name="unit" class="modal-input w-full border border-slate-300 rounded-lg md:rounded text-center outline-none focus:ring-2 focus:ring-indigo-500 transition" placeholder="หน่วย" onclick="this.select()">
+              </div>
 
-                <div class="col-span-3 md:w-24 md:px-2 text-right bg-indigo-50 md:bg-transparent p-2 md:p-0 rounded-lg flex flex-row md:flex-col justify-between md:justify-center items-center mt-1 md:mt-0">
-                   <span class="md:hidden text-xs text-indigo-400 font-bold">รวมรายการนี้:</span>
-                   <span class="font-bold text-indigo-600 md:text-slate-700 row-total text-base md:text-sm block">0.00</span>
-                </div>
+              <div class="col-span-3 md:w-24 md:px-2 text-right bg-indigo-50 md:bg-transparent p-2 md:p-0 rounded-lg flex flex-row md:flex-col justify-between md:justify-center items-center mt-1 md:mt-0">
+                 <span class="md:hidden text-xs text-indigo-400 font-bold">รวมรายการนี้:</span>
+                 <span class="font-bold text-indigo-600 md:text-slate-700 row-total text-base md:text-sm block">0.00</span>
+              </div>
 
-                <div class="hidden md:block w-8 text-center">
-                   <button onclick="this.closest('.multi-row').remove();app.calcMultiTotal()" class="text-slate-300 hover:text-rose-500 p-1 rounded-full hover:bg-rose-50 transition"><i class="fa-solid fa-trash"></i></button>
-                </div>
-             </div>
-          `;
-          tbody.appendChild(div);
-      },
+              <div class="hidden md:block w-8 text-center">
+                 <button onclick="this.closest('.multi-row').remove();app.calcMultiTotal()" class="text-slate-300 hover:text-rose-500 p-1 rounded-full hover:bg-rose-50 transition"><i class="fa-solid fa-trash"></i></button>
+              </div>
+           </div>
+        `;
+        tbody.appendChild(div);
+    },
 
     calcMultiTotal: function() {
         let grandTotal = 0;
         document.querySelectorAll('.multi-row').forEach(row => {
            const p = parseFloat(row.querySelector('[name="price"]').value) || 0;
            const q = parseFloat(row.querySelector('[name="qty"]').value) || 0;
-           const total = p * q;
-           row.querySelector('.row-total').textContent = total.toLocaleString(undefined, {minimumFractionDigits:2});
-           grandTotal += total;
+           const total = p * q; row.querySelector('.row-total').textContent = total.toLocaleString(undefined, {minimumFractionDigits:2}); grandTotal += total;
         });
-        const totalDisplay = document.getElementById('multi-grand-total');
-        if(totalDisplay) { totalDisplay.textContent = grandTotal.toLocaleString(undefined, {minimumFractionDigits:2}); }
+        const totalDisplay = document.getElementById('multi-grand-total'); if(totalDisplay) { totalDisplay.textContent = grandTotal.toLocaleString(undefined, {minimumFractionDigits:2}); }
     },
 
     updateInfoDashboard: function(productName) {
@@ -863,19 +779,12 @@ selectItem: function(val, type) {
     },
 
     saveMultiItems: function() {
-        const date = document.getElementById('multi-date').value;
-        const type = document.getElementById('multi-type').value;
-        const items = [];
+        const date = document.getElementById('multi-date').value; const type = document.getElementById('multi-type').value; const items = [];
         
         document.querySelectorAll('.multi-row').forEach(row => {
-           const cat = row.querySelector('[name="cat"]').value.trim();
-           const prod = row.querySelector('[name="prod"]').value.trim();
-           const price = parseFloat(row.querySelector('[name="price"]').value);
-           const qty = parseFloat(row.querySelector('[name="qty"]').value);
-           // ใช้ "ชิ้น" เป็นค่า default บนมือถือเพื่อความรวดเร็ว
-           const unitInput = row.querySelector('[name="unit"]');
-           const unit = unitInput ? unitInput.value.trim() : 'ชิ้น';
-           
+           const cat = row.querySelector('[name="cat"]').value.trim(); const prod = row.querySelector('[name="prod"]').value.trim();
+           const price = parseFloat(row.querySelector('[name="price"]').value); const qty = parseFloat(row.querySelector('[name="qty"]').value);
+           const unitInput = row.querySelector('[name="unit"]'); const unit = unitInput ? unitInput.value.trim() : 'ชิ้น';
            if(cat && prod && !isNaN(price) && !isNaN(qty)) { items.push({ category: cat, product: prod, price: price, quantity: qty, unit: unit || 'ชิ้น' }); }
         });
 
@@ -887,28 +796,20 @@ selectItem: function(val, type) {
         const receiptNum = "REC" + yy + MM + dd + HH + mm;
 
         let grandTotal = 0; items.forEach(i => grandTotal += (i.price * i.quantity));
-
         this.lastReceiptData = { date: dNum.getTime(), type: type, items: items, total: grandTotal, receiptNumber: receiptNum };
 
         Swal.fire({ title: 'กำลังบันทึกและประมวลผล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
 
         callAPI('saveTransactionBatch', { date, type, items }).then(res => {
             Swal.close(); 
-            if(res.success) {
-                app.showPrintModal(app.lastReceiptData, res.pdfUrl);
-                this.closeMultiModal(); this.fetchData();
-            } else { Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกได้', 'error'); }
+            if(res.success) { app.showPrintModal(app.lastReceiptData, res.pdfUrl); this.closeMultiModal(); this.fetchData(); } 
+            else { Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกได้', 'error'); }
         }).catch(err => { Swal.fire('เกิดข้อผิดพลาด', err.message, 'error'); });
     },
 
-    // 🌟 หน้าต่างพิมพ์บิล
     showPrintModal: function(data, pdfUrl) {
-        let modal = document.getElementById('native-print-modal');
-        if (modal) modal.remove(); 
-
-        modal = document.createElement('div');
-        modal.id = 'native-print-modal';
-        modal.className = 'fixed inset-0 bg-slate-900/80 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity';
+        let modal = document.getElementById('native-print-modal'); if (modal) modal.remove(); 
+        modal = document.createElement('div'); modal.id = 'native-print-modal'; modal.className = 'fixed inset-0 bg-slate-900/80 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity';
         
         modal.innerHTML = `
             <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 flex flex-col gap-4 transform transition-all scale-100">
@@ -920,98 +821,69 @@ selectItem: function(val, type) {
                 <button id="btn-print-native" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-lg shadow-md hover:bg-indigo-700 transition flex justify-center items-center gap-3">
                     <i class="fa-brands fa-apple text-2xl"></i> พิมพ์ AirPrint (iOS/PC)
                 </button>
-                <button onclick="document.getElementById('native-print-modal').remove()" class="w-full py-3 mt-2 bg-slate-100 border-2 border-slate-200 text-slate-500 rounded-2xl font-bold hover:bg-slate-200 transition">
-                    ปิดหน้าต่าง
-                </button>
+                <button onclick="document.getElementById('native-print-modal').remove()" class="w-full py-3 mt-2 bg-slate-100 border-2 border-slate-200 text-slate-500 rounded-2xl font-bold hover:bg-slate-200 transition">ปิดหน้าต่าง</button>
             </div>
         `;
         document.body.appendChild(modal);
 
         const pdfContainer = document.getElementById('pdf-btn-container');
         if (pdfUrl) {
-            pdfContainer.innerHTML = `
-                <button onclick="window.open('${pdfUrl}', '_blank')" class="w-full mb-1 py-4 bg-emerald-500 text-white rounded-2xl font-bold text-lg shadow-md hover:bg-emerald-600 transition flex justify-center items-center gap-3">
-                    <i class="fa-solid fa-file-pdf text-2xl"></i> ดูบิล (PDF)
-                </button>
-            `;
+            pdfContainer.innerHTML = `<button onclick="window.open('${pdfUrl}', '_blank')" class="w-full mb-1 py-4 bg-emerald-500 text-white rounded-2xl font-bold text-lg shadow-md hover:bg-emerald-600 transition flex justify-center items-center gap-3"><i class="fa-solid fa-file-pdf text-2xl"></i> ดูบิล (PDF)</button>`;
         }
 
         document.getElementById('btn-print-bt').addEventListener('click', function(e) {
-            e.preventDefault(); document.getElementById('native-print-modal').classList.add('hidden');
-            app.printWebBluetoothCanvas(app.lastReceiptData);
+            e.preventDefault(); document.getElementById('native-print-modal').classList.add('hidden'); app.printWebBluetoothCanvas(app.lastReceiptData);
         });
 
-        document.getElementById('btn-print-native').addEventListener('click', () => {
-            app.printThermalReceipt(app.lastReceiptData);
-        });
+        document.getElementById('btn-print-native').addEventListener('click', () => { app.printThermalReceipt(app.lastReceiptData); });
 
-        app.lastReceiptData = data;
-        modal.classList.remove('hidden');
+        app.lastReceiptData = data; modal.classList.remove('hidden');
     },
 
-    // --- พิมพ์ BLUETOOTH (Canvas = แก้ภาษาต่างดาว & สระไม่ลอย) ---
     printWebBluetoothCanvas: async function(data) {
         try {
             if (!navigator.bluetooth) { alert("เบราว์เซอร์นี้ไม่รองรับการพิมพ์ผ่าน Bluetooth"); return; }
             const device = await navigator.bluetooth.requestDevice({
                 acceptAllDevices: true,
-                optionalServices: [
-                    '000018f0-0000-1000-8000-00805f9b34fb', '49535343-fe7d-4ae5-8fa9-9fafd205e455', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
-                    '0000180a-0000-1000-8000-00805f9b34fb', '0000ff00-0000-1000-8000-00805f9b34fb', '0000fee7-0000-1000-8000-00805f9b34fb' 
-                ]
+                optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', '49535343-fe7d-4ae5-8fa9-9fafd205e455', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2', '0000180a-0000-1000-8000-00805f9b34fb', '0000ff00-0000-1000-8000-00805f9b34fb', '0000fee7-0000-1000-8000-00805f9b34fb' ]
             });
             Swal.fire({ title: 'กำลังเตรียมบิล...', text: 'ห้ามปิดหน้าจอ', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-            const server = await device.gatt.connect();
-            const services = await server.getPrimaryServices();
-            let printCharacteristic = null;
-
+            const server = await device.gatt.connect(); const services = await server.getPrimaryServices(); let printCharacteristic = null;
             for (let service of services) {
                 const characteristics = await service.getCharacteristics();
-                for (let char of characteristics) {
-                    if (char.properties.writeWithoutResponse || char.properties.write) { printCharacteristic = char; break; }
-                }
+                for (let char of characteristics) { if (char.properties.writeWithoutResponse || char.properties.write) { printCharacteristic = char; break; } }
                 if (printCharacteristic) break;
             }
             if (!printCharacteristic) throw new Error('ไม่สามารถคุยกับเครื่องปริ้นท์ได้');
 
-            // 🌟 วาดบิลลงบน Canvas (เบื้องหลัง)
             const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
-            const width = 384; canvas.width = width;
-            let currentY = 30; canvas.height = 300 + (data.items.length * 60);
+            const width = 384; canvas.width = width; let currentY = 30; canvas.height = 300 + (data.items.length * 60);
 
-            ctx.fillStyle = 'white'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'black'; ctx.textBaseline = 'top';
+            ctx.fillStyle = 'white'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = 'black'; ctx.textBaseline = 'top';
 
-            // หัวบิล
             ctx.font = 'bold 26px "Sarabun", sans-serif'; ctx.textAlign = 'center'; ctx.fillText("ร้าน บ้านนาค้าของเก่า", width/2, currentY); currentY += 35;
             ctx.font = '22px "Sarabun", sans-serif'; ctx.fillText("โทร : 082-447-8795", width/2, currentY); currentY += 40;
 
             ctx.textAlign = 'left'; ctx.fillText("---------------------------------------", 0, currentY); currentY += 25;
             ctx.fillText("เลขที่: " + data.receiptNumber, 10, currentY); currentY += 30;
             const d = new Date(data.date); ctx.fillText("วันที่: " + d.toLocaleDateString('th-TH') + ' ' + d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}), 10, currentY); currentY += 30;
-            ctx.fillText("ประเภท: " + data.type, 10, currentY); currentY += 30;
-            ctx.fillText("---------------------------------------", 0, currentY); currentY += 25;
+            ctx.fillText("ประเภท: " + data.type, 10, currentY); currentY += 30; ctx.fillText("---------------------------------------", 0, currentY); currentY += 25;
 
-            // รายการสินค้า
             ctx.font = 'bold 22px "Sarabun", sans-serif';
             data.items.forEach(item => {
                 ctx.textAlign = 'left'; ctx.fillText(item.product, 10, currentY); currentY += 30;
-                ctx.font = '22px "Sarabun", sans-serif';
-                ctx.fillText(`  ${item.quantity} ${item.unit} x ${item.price.toLocaleString()}`, 10, currentY);
+                ctx.font = '22px "Sarabun", sans-serif'; ctx.fillText(`  ${item.quantity} ${item.unit} x ${item.price.toLocaleString()}`, 10, currentY);
                 ctx.textAlign = 'right'; ctx.fillText((item.price * item.quantity).toLocaleString(), width - 10, currentY);
                 currentY += 30; ctx.font = 'bold 22px "Sarabun", sans-serif';
             });
 
             ctx.textAlign = 'left'; ctx.fillText("---------------------------------------", 0, currentY); currentY += 25;
-            
-            // ท้ายบิล
             ctx.font = 'bold 26px "Sarabun", sans-serif'; ctx.fillText("ยอดรวมทั้งสิ้น", 10, currentY);
             ctx.textAlign = 'right'; ctx.fillText(data.total.toLocaleString() + " ฿", width - 10, currentY); currentY += 40;
             ctx.textAlign = 'left'; ctx.font = '22px "Sarabun", sans-serif'; ctx.fillText("---------------------------------------", 0, currentY); currentY += 30;
             ctx.textAlign = 'center'; ctx.fillText("ขอบคุณที่ใช้บริการ", width/2, currentY);
 
-            // 🌟 แปลง Canvas เป็น ESC/POS Raster (รูปภาพ)
             Swal.fire({ title: 'กำลังส่งไปพิมพ์...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
             const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height); const pixels = imgData.data;
@@ -1030,15 +902,13 @@ selectItem: function(val, type) {
             }
             bytes.push(0x0A, 0x0A, 0x0A); // feed 3 lines
 
-            let payload = new Uint8Array(bytes);
-            let chunkSize = 256; // ดันขึ้นเป็น 256 หรือ 512
+            let payload = new Uint8Array(bytes); let chunkSize = 256; 
             for (let i = 0; i < payload.length; i += chunkSize) {
                 let chunk = payload.slice(i, i + chunkSize);
                 if (printCharacteristic.properties.writeWithoutResponse) await printCharacteristic.writeValueWithoutResponse(chunk);
                 else await printCharacteristic.writeValue(chunk);
-                await new Promise(r => setTimeout(r, 5)); // ลดเวลาพักเหลือ 5ms
+                await new Promise(r => setTimeout(r, 5)); 
             }
-
             setTimeout(() => { if (device.gatt.connected) device.gatt.disconnect(); Swal.fire('พิมพ์สำเร็จ!', '', 'success'); }, 1000);
 
         } catch (err) {
@@ -1048,13 +918,9 @@ selectItem: function(val, type) {
         }
     },
 
-    // --- พิมพ์ AirPrint / PC ---
     printThermalReceipt: function(data) {
-        const d = new Date(data.date);
-        const dateStr = d.toLocaleDateString('th-TH') + ' ' + d.toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'});
-
-        let html = `
-        <!DOCTYPE html><html><head><meta charset="UTF-8"><title>ใบเสร็จรับเงิน</title>
+        const d = new Date(data.date); const dateStr = d.toLocaleDateString('th-TH') + ' ' + d.toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'});
+        let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>ใบเสร็จรับเงิน</title>
             <style>
                 @page { margin: 0; size: 58mm auto; }
                 body { font-family: 'Sarabun', sans-serif; font-size: 12px; width: 58mm; padding: 5px; margin: 0 auto; color: #000; }
@@ -1072,55 +938,32 @@ selectItem: function(val, type) {
             </table>
             <div class="line"></div>
             <table><tr><td class="bold">ยอดรวมทั้งสิ้น</td><td class="text-right bold" style="font-size:14px;">${data.total.toLocaleString()} ฿</td></tr></table>
-            <div class="line"></div>
-            <div class="text-center" style="font-size:10px;">ขอบคุณที่ใช้บริการ</div>
+            <div class="line"></div><div class="text-center" style="font-size:10px;">ขอบคุณที่ใช้บริการ</div>
             <script>window.onload = function() { window.print(); }<\/script>
         </body></html>`;
-
-        const printWin = window.open('', '_blank', 'width=300,height=500');
-        printWin.document.write(html); printWin.document.close();
+        const printWin = window.open('', '_blank', 'width=300,height=500'); printWin.document.write(html); printWin.document.close();
     },
 
-    // --- REPRINT ---
     reprintReceipt: function(timestamp, type) {
         const itemsToPrint = this.data.filter(t => t.date === timestamp && t.type === type);
         if(itemsToPrint.length === 0) return;
-
         let grandTotal = 0;
-        const formattedItems = itemsToPrint.map(item => {
-            grandTotal += item.total;
-            return { category: item.category, product: item.product, price: item.price, quantity: item.quantity, unit: item.unit };
-        });
-
+        const formattedItems = itemsToPrint.map(item => { grandTotal += item.total; return { category: item.category, product: item.product, price: item.price, quantity: item.quantity, unit: item.unit }; });
         const d = new Date(timestamp);
         const receiptNum = "REC" + d.getFullYear().toString().slice(-2) + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') + String(d.getHours()).padStart(2, '0') + String(d.getMinutes()).padStart(2, '0');
-
         this.lastReceiptData = { date: timestamp, type: type, items: formattedItems, total: grandTotal, receiptNumber: receiptNum };
 
         Swal.fire({ title: 'กำลังดึงข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
-
-        callAPI('generateReceiptFromSheet', this.lastReceiptData).then(res => {
-            Swal.close(); app.showPrintModal(app.lastReceiptData, res.url);
-        }).catch(err => {
-            Swal.fire('เกิดข้อผิดพลาด', err.message, 'error');
-        });
+        callAPI('generateReceiptFromSheet', this.lastReceiptData).then(res => { Swal.close(); app.showPrintModal(app.lastReceiptData, res.url); }).catch(err => { Swal.fire('เกิดข้อผิดพลาด', err.message, 'error'); });
     },
 
-    // --- EDIT & DELETE ---
     openEditModal: function(id) {
-        const item = this.data.find(t => t.id === id); 
-        if(!item) return;
-        
-        document.getElementById('edit-id').value = id;
-        const d = new Date(item.date);
+        const item = this.data.find(t => t.id === id); if(!item) return;
+        document.getElementById('edit-id').value = id; const d = new Date(item.date);
         document.getElementById('edit-date').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        document.getElementById('edit-type').value = item.type;
-        document.getElementById('edit-category').value = item.category;
-        document.getElementById('edit-product').value = item.product;
-        document.getElementById('edit-price').value = item.price;
-        document.getElementById('edit-qty').value = item.quantity;
-        document.getElementById('edit-unit').value = item.unit;
-        
+        document.getElementById('edit-type').value = item.type; document.getElementById('edit-category').value = item.category;
+        document.getElementById('edit-product').value = item.product; document.getElementById('edit-price').value = item.price;
+        document.getElementById('edit-qty').value = item.quantity; document.getElementById('edit-unit').value = item.unit;
         document.getElementById('modal-edit').classList.remove('hidden');
     },
 
@@ -1130,7 +973,6 @@ selectItem: function(val, type) {
            category: document.getElementById('edit-category').value, product: document.getElementById('edit-product').value,
            price: document.getElementById('edit-price').value, quantity: document.getElementById('edit-qty').value, unit: document.getElementById('edit-unit').value
         };
-        
         Swal.showLoading();
         callAPI('updateSingleTransaction', form).then(res => {
             if(res.success) { Swal.fire('สำเร็จ', 'แก้ไขเรียบร้อย', 'success'); document.getElementById('modal-edit').classList.add('hidden'); this.fetchData(); } 
@@ -1140,17 +982,12 @@ selectItem: function(val, type) {
 
     deleteItem: function(id) {
       Swal.fire({ title: 'ยืนยันลบ?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#f43f5e' }).then((r) => {
-         if(r.isConfirmed) {
-            callAPI('deleteTransaction', id).then(res => { Swal.fire('ลบแล้ว', '', 'success'); this.fetchData(); }).catch(err => { Swal.fire('Error', err.message, 'error'); });
-         }
+         if(r.isConfirmed) { callAPI('deleteTransaction', id).then(res => { Swal.fire('ลบแล้ว', '', 'success'); this.fetchData(); }).catch(err => { Swal.fire('Error', err.message, 'error'); }); }
       });
     },
 
-    // --- STOCK & LISTENERS ---
     renderStock: function() {
-      const inv = {};
-      const stockSearch = document.getElementById('stock-search-input') ? document.getElementById('stock-search-input').value.toLowerCase() : '';
-
+      const inv = {}; const stockSearch = document.getElementById('stock-search-input') ? document.getElementById('stock-search-input').value.toLowerCase() : '';
       [...this.data].sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(t => {
          const k = t.category + '-' + t.product;
          if(!inv[k]) { inv[k] = { n: t.product, c: t.category, q: 0, u: t.unit, lastBuy:'-', lastSell:'-' }; }
@@ -1158,9 +995,7 @@ selectItem: function(val, type) {
          inv[k].q = Math.round(inv[k].q * 100) / 100; inv[k].u = t.unit;
       });
 
-      const div = document.getElementById('stock-cards');
-      if(!div) return; div.innerHTML = '';
-
+      const div = document.getElementById('stock-cards'); if(!div) return; div.innerHTML = '';
       Object.values(inv).forEach(i => {
          if(stockSearch && !i.n.toLowerCase().includes(stockSearch) && !i.c.toLowerCase().includes(stockSearch)) { return; }
          const isLow = i.q <= 5;
@@ -1176,20 +1011,11 @@ selectItem: function(val, type) {
             <div>
                 <div class="flex justify-between items-end mb-3 md:mb-4 pb-3 md:pb-4 border-b border-slate-100 border-dashed">
                     <span class="text-xs md:text-sm text-slate-500 mb-1">คงเหลือ:</span>
-                    <div class="text-right">
-                        <span class="text-2xl md:text-3xl font-bold ${i.q<0 ? 'text-rose-500' : 'text-slate-800'}">${i.q.toLocaleString()}</span>
-                        <span class="text-xs md:text-sm text-slate-400 ml-1">${i.u}</span>
-                    </div>
+                    <div class="text-right"><span class="text-2xl md:text-3xl font-bold ${i.q<0 ? 'text-rose-500' : 'text-slate-800'}">${i.q.toLocaleString()}</span><span class="text-xs md:text-sm text-slate-400 ml-1">${i.u}</span></div>
                 </div>
                 <div class="flex justify-between text-[10px] md:text-xs text-slate-500">
-                    <div class="flex flex-col">
-                        <span class="text-slate-400 mb-1">ซื้อล่าสุด</span>
-                        <span class="font-bold text-slate-700 text-[11px] md:text-sm">${i.lastBuy !== '-' ? Number(i.lastBuy).toLocaleString() : '-'} ฿</span>
-                    </div>
-                    <div class="flex flex-col text-right">
-                        <span class="text-slate-400 mb-1">ขายล่าสุด</span>
-                        <span class="font-bold text-emerald-600 text-[11px] md:text-sm">${i.lastSell !== '-' ? Number(i.lastSell).toLocaleString() : '-'} ฿</span>
-                    </div>
+                    <div class="flex flex-col"><span class="text-slate-400 mb-1">ซื้อล่าสุด</span><span class="font-bold text-slate-700 text-[11px] md:text-sm">${i.lastBuy !== '-' ? Number(i.lastBuy).toLocaleString() : '-'} ฿</span></div>
+                    <div class="flex flex-col text-right"><span class="text-slate-400 mb-1">ขายล่าสุด</span><span class="font-bold text-emerald-600 text-[11px] md:text-sm">${i.lastSell !== '-' ? Number(i.lastSell).toLocaleString() : '-'} ฿</span></div>
                 </div>
             </div>
          </div>`;
@@ -1197,13 +1023,8 @@ selectItem: function(val, type) {
     },
 
     setupListeners: function() {
-       const searchInput = document.getElementById('search-input');
-       if(searchInput) { searchInput.addEventListener('input', () => this.applyFilters()); }
-
-       const rowsSelect = document.getElementById('rows-per-page');
-       if(rowsSelect) {
-           rowsSelect.addEventListener('change', (e) => { this.rowsPerPage=parseInt(e.target.value); this.currentPage=1; this.renderTable(); });
-       }
+       const searchInput = document.getElementById('search-input'); if(searchInput) { searchInput.addEventListener('input', () => this.applyFilters()); }
+       const rowsSelect = document.getElementById('rows-per-page'); if(rowsSelect) { rowsSelect.addEventListener('change', (e) => { this.rowsPerPage=parseInt(e.target.value); this.currentPage=1; this.renderTable(); }); }
     }
   };
 
