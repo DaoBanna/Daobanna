@@ -1004,6 +1004,7 @@
             return Math.ceil(new Date(date).getDate() / 7); 
         },
 
+        // --- MULTI-MODAL (เพิ่มรายการ) ---
         openMultiModal: function() {
             document.getElementById('modal-multi').classList.remove('hidden');
             document.getElementById('multi-items-body').innerHTML = '';
@@ -1328,7 +1329,6 @@
                 pdfContainer.innerHTML = `<button onclick="window.open('${pdfUrl}', '_blank')" class="w-full mb-1 py-4 bg-emerald-500 text-white rounded-2xl font-bold text-lg shadow-md hover:bg-emerald-600 transition flex justify-center items-center gap-3"><i class="fa-solid fa-file-pdf text-2xl"></i> ดูบิล (PDF)</button>`;
             }
 
-            // คืนค่า Event Listener ให้เหมือนต้นฉบับเป๊ะๆ เพื่อไม่ให้แอนดรอยด์บล็อก
             document.getElementById('btn-print-bt').addEventListener('click', function(e) {
                 e.preventDefault(); 
                 document.getElementById('native-print-modal').classList.add('hidden'); 
@@ -1346,7 +1346,7 @@
         printWebBluetoothCanvas: async function(data) {
             try {
                 if (!navigator.bluetooth) { 
-                    alert("เบราว์เซอร์นี้ไม่รองรับการพิมพ์ผ่าน Bluetooth"); 
+                    alert("เบราว์เซอร์นี้ไม่รองรับการพิมพ์ผ่าน Bluetooth\n\n- หากใช้ PC: ต้องเปิดใช้งาน Bluetooth ในเครื่องและตั้งค่าจับคู่อุปกรณ์\n- หากใช้ มือถือ: ต้องใช้เบราว์เซอร์ Chrome และเปิด GPS ตำแหน่งที่ตั้ง"); 
                     return; 
                 }
                 
@@ -1391,9 +1391,7 @@
                 const width = 384; 
                 canvas.width = width; 
                 let currentY = 30; 
-                
-                // 🛠️ จุดเดียวที่แก้คือความสูงตรงนี้ครับ
-                canvas.height = 360 + (data.items.length * 60);
+                canvas.height = 300 + (data.items.length * 60);
 
                 ctx.fillStyle = 'white'; 
                 ctx.fillRect(0, 0, canvas.width, canvas.height); 
@@ -1487,9 +1485,9 @@
                 }
                 bytes.push(0x0A, 0x0A, 0x0A);
 
-                // กลับมาใช้ความเร็วเดิมที่ทำงานได้ชัวร์ๆ (80 / 20)
+                // 🛑 ตั้งค่าความเร็วให้เสถียรที่สุดตรงนี้
                 let payload = new Uint8Array(bytes); 
-                let chunkSize = 80; 
+                let chunkSize = 80; // ขนาดปลอดภัยสำหรับ POS-58 จีน
                 
                 for (let i = 0; i < payload.length; i += chunkSize) {
                     let chunk = payload.slice(i, i + chunkSize);
@@ -1498,7 +1496,7 @@
                     } else {
                         await printCharacteristic.writeValue(chunk);
                     }
-                    await new Promise(r => setTimeout(r, 20)); 
+                    await new Promise(r => setTimeout(r, 20)); // หน่วงเวลา 20ms
                 }
                 
                 setTimeout(() => { 
@@ -1511,6 +1509,7 @@
                 Swal.close();
                 
                 if (err.name === 'NotFoundError') { 
+                    // กดปุ่มยกเลิกการเลือกเครื่องพิมพ์ จะไม่ทำอะไร
                     return; 
                 } else if (err.name === 'SecurityError') { 
                     alert('บลูทูธถูกบล็อก! กรุณาอนุญาตสิทธิ์ในเบราว์เซอร์\n(บนมือถือต้องเปิด GPS ด้วยครับ)'); 
