@@ -1491,7 +1491,7 @@
 
                 // 🛠️ แก้จุดที่ 2: ปรับแต่งความเร็วให้ซิ่งขึ้น (Chunk 128 / พัก 10ms)
                 let payload = new Uint8Array(bytes); 
-                let chunkSize = 128; 
+                let chunkSize = 80; 
                 
                 for (let i = 0; i < payload.length; i += chunkSize) {
                     let chunk = payload.slice(i, i + chunkSize);
@@ -1500,7 +1500,7 @@
                     } else {
                         await printCharacteristic.writeValue(chunk);
                     }
-                    await new Promise(r => setTimeout(r, 10)); 
+                    await new Promise(r => setTimeout(r, 20)); 
                 }
                 
                 setTimeout(() => { 
