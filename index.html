@@ -1134,13 +1134,14 @@
         modal.classList.remove('hidden');
     },
 
-    // พิมพ์ Bluetooth (พร้อมภาษาไทย)
+    // พิมพ์ Bluetooth แบบ "แปลงเป็นรูปภาพ" (แก้ปัญหาภาษาต่างดาว & สระลอย 100%)
     printWebBluetooth: async function(data) {
         try {
             if (!navigator.bluetooth) {
                 alert("เบราว์เซอร์นี้ไม่รองรับการพิมพ์ผ่าน Bluetooth"); return;
             }
 
+            // 1. เชื่อมต่อ Bluetooth
             const device = await navigator.bluetooth.requestDevice({
                 acceptAllDevices: true,
                 optionalServices: [
@@ -1149,9 +1150,8 @@
                 ]
             });
 
-            Swal.fire({ title: 'กำลังส่งข้อมูลไปเครื่องปริ้นท์...', text: 'กรุณารอสักครู่ (ห้ามปิดหน้าจอ)', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: 'กำลังเตรียมบิล...', text: 'กำลังวาดรูปภาพใบเสร็จ', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-            await new Promise(resolve => setTimeout(resolve, 300));
             const server = await device.gatt.connect();
             const services = await server.getPrimaryServices();
             let printCharacteristic = null;
@@ -1164,55 +1164,109 @@
                 if (printCharacteristic) break;
             }
 
-            if (!printCharacteristic) { throw new Error('ไม่สามารถคุยกับเครื่องปริ้นท์นี้ได้'); }
+            if (!printCharacteristic) throw new Error('ไม่สามารถคุยกับเครื่องปริ้นท์ได้');
 
+            // 2. 🌟 วาดบิลลงบน Canvas (เบื้องหลัง)
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const width = 384; // ความกว้างมาตรฐาน 58mm (384 dots)
+            canvas.width = width;
+            
+            // คำนวณความสูงให้พอดีกับรายการ
+            const lineHeight = 30;
+            let currentY = 30;
+            canvas.height = 300 + (data.items.length * 60);
+
+            // เทพื้นหลังสีขาว
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // ตั้งค่าสีและฟอนต์
+            ctx.fillStyle = 'black';
+            ctx.textBaseline = 'top';
+
+            // วาดส่วนหัว
+            ctx.font = 'bold 26px "Sarabun", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText("ร้าน บ้านนาค้าของเก่า", width/2, currentY); currentY += 35;
+            
+            ctx.font = '22px "Sarabun", sans-serif';
+            ctx.fillText("โทร : 082-447-8795", width/2, currentY); currentY += 40;
+
+            ctx.textAlign = 'left';
+            ctx.fillText("---------------------------------------", 0, currentY); currentY += 25;
+            ctx.fillText("เลขที่: " + data.receiptNumber, 10, currentY); currentY += 30;
             const d = new Date(data.date);
-            const dateStr = d.toLocaleDateString('th-TH') + ' ' + d.toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'});
-            
-            let text = "";
-            text += "      ร้าน บ้านนาค้าของเก่า\n";
-            text += "      โทร : 082-447-8795\n";
-            text += "--------------------------------\n";
-            text += "เลขที่: " + data.receiptNumber + "\n";
-            text += "วันที่: " + dateStr + "\n";
-            text += "ประเภท: " + data.type + "\n";
-            text += "--------------------------------\n";
-            
-            data.items.forEach(item => {
-                text += item.product + "\n";
-                let line2 = "  " + item.quantity + " " + item.unit + " x " + item.price;
-                let totalStr = (item.price * item.quantity).toLocaleString();
-                let spaces = 32 - line2.length - totalStr.length;
-                if(spaces < 1) spaces = 1;
-                text += line2 + " ".repeat(spaces) + totalStr + "\n";
-            });
-            
-            text += "--------------------------------\n";
-            let totalTitle = "ยอดรวมทั้งสิ้น";
-            let totalVal = data.total.toLocaleString() + " B";
-            let space2 = 32 - totalTitle.length - totalVal.length;
-            text += totalTitle + " ".repeat(space2 > 0 ? space2 : 1) + totalVal + "\n";
-            text += "--------------------------------\n";
-            text += "       ขอบคุณที่ใช้บริการ\n\n\n\n";
+            ctx.fillText("วันที่: " + d.toLocaleDateString('th-TH') + ' ' + d.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}), 10, currentY); currentY += 30;
+            ctx.fillText("ประเภท: " + data.type, 10, currentY); currentY += 30;
+            ctx.fillText("---------------------------------------", 0, currentY); currentY += 25;
 
+            // วาดรายการสินค้า
+            ctx.font = 'bold 22px "Sarabun", sans-serif';
+            data.items.forEach(item => {
+                ctx.textAlign = 'left';
+                ctx.fillText(item.product, 10, currentY); currentY += 30;
+                
+                ctx.font = '22px "Sarabun", sans-serif';
+                ctx.fillText(`  ${item.quantity} ${item.unit} x ${item.price.toLocaleString()}`, 10, currentY);
+                
+                ctx.textAlign = 'right';
+                ctx.fillText((item.price * item.quantity).toLocaleString(), width - 10, currentY);
+                currentY += 30;
+                ctx.font = 'bold 22px "Sarabun", sans-serif';
+            });
+
+            ctx.textAlign = 'left';
+            ctx.fillText("---------------------------------------", 0, currentY); currentY += 25;
+            
+            // วาดส่วนท้าย
+            ctx.font = 'bold 26px "Sarabun", sans-serif';
+            ctx.fillText("ยอดรวมทั้งสิ้น", 10, currentY);
+            ctx.textAlign = 'right';
+            ctx.fillText(data.total.toLocaleString() + " ฿", width - 10, currentY); currentY += 40;
+
+            ctx.textAlign = 'left';
+            ctx.font = '22px "Sarabun", sans-serif';
+            ctx.fillText("---------------------------------------", 0, currentY); currentY += 30;
+            
+            ctx.textAlign = 'center';
+            ctx.fillText("ขอบคุณที่ใช้บริการ", width/2, currentY);
+
+            // 3. แปลงรูปภาพเป็นรหัสจุดพิกเซล (ESC/POS Raster)
+            Swal.fire({ title: 'กำลังส่งไปพิมพ์...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const pixels = imgData.data;
+            const widthBytes = Math.ceil(canvas.width / 8);
+            const heightDots = canvas.height;
+            
             let bytes = [];
             bytes.push(0x1B, 0x40); // Reset
-            bytes.push(0x1C, 0x2E); // Close Chinese mode
-            bytes.push(0x1B, 0x74, 26); // Thai Code Page (เปลี่ยน 26 เป็น 11, 21, 255 ถ้าไม่ออก)
-            
-            for (let i = 0; i < text.length; i++) {
-                let code = text.charCodeAt(i);
-                if (code >= 0x0E00 && code <= 0x0E7F) {
-                    bytes.push(code - 0x0E00 + 0xA0); 
-                } else if (code < 128) {
-                    bytes.push(code); 
-                } else {
-                    bytes.push(0x3F); 
+            bytes.push(0x1D, 0x76, 0x30, 0x00); // คำสั่งปริ้นท์รูปภาพ GS v 0
+            bytes.push(widthBytes % 256, Math.floor(widthBytes / 256));
+            bytes.push(heightDots % 256, Math.floor(heightDots / 256));
+
+            for (let y = 0; y < heightDots; y++) {
+                for (let xByte = 0; xByte < widthBytes; xByte++) {
+                    let byte = 0;
+                    for (let bit = 0; bit < 8; bit++) {
+                        let x = xByte * 8 + bit;
+                        if (x < canvas.width) {
+                            let idx = (y * canvas.width + x) * 4;
+                            // ถ้าพิกเซลนั้นเป็นสีดำ (R < 128) ให้ทำเครื่องหมาย 1
+                            if (pixels[idx] < 128) {
+                                byte |= (1 << (7 - bit));
+                            }
+                        }
+                    }
+                    bytes.push(byte);
                 }
             }
+            bytes.push(0x0A, 0x0A, 0x0A); // ป้อนกระดาษ 3 บรรทัด
 
+            // 4. ส่งข้อมูลเข้าเครื่องปริ้นท์ (แบ่ง Chunk ทีละนิดเพื่อไม่ให้เน็ตบลูทูธค้าง)
             let payload = new Uint8Array(bytes);
-            let chunkSize = 20; 
+            let chunkSize = 100; // ส่งทีละ 100 bytes
             for (let i = 0; i < payload.length; i += chunkSize) {
                 let chunk = payload.slice(i, i + chunkSize);
                 if (printCharacteristic.properties.writeWithoutResponse) {
@@ -1220,24 +1274,21 @@
                 } else {
                     await printCharacteristic.writeValue(chunk);
                 }
-                await new Promise(resolve => setTimeout(resolve, 80)); 
+                await new Promise(resolve => setTimeout(resolve, 15)); // หน่วงเวลาเล็กน้อยให้เครื่องย่อยข้อมูลทัน
             }
 
             setTimeout(() => { 
                 if (device.gatt.connected) device.gatt.disconnect(); 
                 Swal.fire('พิมพ์สำเร็จ!', 'ใบเสร็จถูกปริ้นท์เรียบร้อย', 'success');
-            }, 1500);
+            }, 1000);
 
         } catch (err) {
             console.error(err);
             Swal.close();
-            if (err.name === 'NotFoundError') {
-                return; 
-            } else if (err.name === 'SecurityError') {
-                alert('บลูทูธถูกบล็อก! กรุณาอนุญาตสิทธิ์การใช้ Bluetooth ให้กับเบราว์เซอร์');
-            } else {
-                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ:\n' + err.message);
-            }
+            if (err.name === 'NotFoundError') { return; } 
+            else if (err.name === 'SecurityError') { alert('บลูทูธถูกบล็อก! กรุณาอนุญาตสิทธิ์การใช้ Bluetooth ให้กับเบราว์เซอร์'); } 
+            else { alert('เกิดข้อผิดพลาดในการเชื่อมต่อ:\n' + err.message); }
+            
             const printModal = document.getElementById('native-print-modal');
             if (printModal) printModal.classList.remove('hidden');
         }
