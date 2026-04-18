@@ -735,31 +735,46 @@
         });
     },
 
-    selectItem: function(val, type) {
+selectItem: function(val, type) {
         if (!this.activeInput) return;
         this.activeInput.value = val;
         document.getElementById('global-dropdown').style.display = 'none';
+
         if (type === 'prod') {
+            // อัปเดตข้อมูลแถบด้านล่าง
             this.updateInfoDashboard(val);
+            
             const row = this.activeInput.closest('.multi-row');
-            const catInput = row.querySelector('[name="cat"]');
+            
+            // 1. ค้นหาประวัติสินค้าจากฐานข้อมูล
             const history = this.data.find(t => t.product === val);
             
             if (history) {
-                catInput.value = history.category;
-                const unitInput = row.querySelector('[name="unit"]');
-                if(!unitInput.value) { unitInput.value = history.unit; }
+                // 2. เติมหมวดหมู่ให้อัตโนมัติ
+                const catInput = row.querySelector('[name="cat"]');
+                if (catInput) catInput.value = history.category || '';
 
+                // 3. เติมหน่วยสินค้า (ถ้าช่องยังว่างอยู่)
+                const unitInput = row.querySelector('[name="unit"]');
+                if (unitInput && !unitInput.value) { 
+                    unitInput.value = history.unit || 'ชิ้น'; 
+                }
+
+                // 4. เติมราคาล่าสุด (อัปเกรดใหม่: ดึงให้ทั้งตอน 'ซื้อ' และ 'ขาย')
                 const currentType = document.getElementById('multi-type').value;
-                if (currentType === 'ซื้อ') {
-                    const lastBuy = this.data.filter(t => t.product === val && t.type === 'ซื้อ').sort((a,b) => b.date - a.date)[0];
-                    if (lastBuy) { row.querySelector('[name="price"]').value = lastBuy.price; this.calcMultiTotal(); }
+                const priceInput = row.querySelector('[name="price"]');
+                
+                // หาประวัติล่าสุดที่ตรงกับประเภทบิลปัจจุบัน
+                const lastRecord = this.data.filter(t => t.product === val && t.type === currentType).sort((a,b) => b.date - a.date)[0];
+                
+                if (lastRecord && priceInput) { 
+                    priceInput.value = lastRecord.price; 
+                    this.calcMultiTotal(); // คำนวณยอดรวมใหม่ทันที
                 }
             }
         }
         this.activeInput = null;
     },
-
     addMultiRow: function() {
         const tbody = document.getElementById('multi-items-body');
         const rowIdx = tbody.children.length + 1;
