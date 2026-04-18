@@ -1487,7 +1487,7 @@
 
                 // 🛑 ตั้งค่าความเร็วให้เสถียรที่สุดตรงนี้
                 let payload = new Uint8Array(bytes); 
-                let chunkSize = 80; // ขนาดปลอดภัยสำหรับ POS-58 จีน
+                let chunkSize = 256; // ขนาดปลอดภัยสำหรับ POS-58 จีน
                 
                 for (let i = 0; i < payload.length; i += chunkSize) {
                     let chunk = payload.slice(i, i + chunkSize);
@@ -1496,7 +1496,7 @@
                     } else {
                         await printCharacteristic.writeValue(chunk);
                     }
-                    await new Promise(r => setTimeout(r, 20)); // หน่วงเวลา 20ms
+                    await new Promise(r => setTimeout(r, 10)); // หน่วงเวลา 20ms
                 }
                 
                 setTimeout(() => { 
