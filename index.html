@@ -1486,8 +1486,11 @@
                 bytes.push(0x0A, 0x0A, 0x0A);
 
                 // 🛑 ตั้งค่าความเร็วให้เสถียรที่สุดตรงนี้
+                // 🛑 ตั้งค่าความเร็วบลูทูธ (จุดสมดุล)
                 let payload = new Uint8Array(bytes); 
-                let chunkSize = 256; // ขนาดปลอดภัยสำหรับ POS-58 จีน
+                
+                // ⚡ ลองปรับขึ้นมาเป็น 128 (เดิม 80)
+                let chunkSize = 128; 
                 
                 for (let i = 0; i < payload.length; i += chunkSize) {
                     let chunk = payload.slice(i, i + chunkSize);
@@ -1496,7 +1499,8 @@
                     } else {
                         await printCharacteristic.writeValue(chunk);
                     }
-                    await new Promise(r => setTimeout(r, 10)); // หน่วงเวลา 20ms
+                    // ⚡ ลดเวลาพักลงเหลือ 10 มิลลิวินาที (เดิม 20)
+                    await new Promise(r => setTimeout(r, 10)); 
                 }
                 
                 setTimeout(() => { 
