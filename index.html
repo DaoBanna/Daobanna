@@ -354,7 +354,7 @@
   // =======================================================================
   // 🔴 🔴 🔴 เอา URL ของ Web App จาก Google Apps Script มาใส่ตรงนี้ 🔴 🔴 🔴
   // =======================================================================
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby7vM0fuPbRx5fCpYkypOxaMkNlNwBxKLKzQTyP70I04-YzIuJt8g71S9m7-qap7Vgh/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ3Z36H2V5mbmVIN_Rj0x4NgM-swfwp2xvOY8IbbTDd_NvZqbssKXXVmuIKXxR0t0/exec';
 
   // ฟังก์ชันยิง API ไปหา Google Sheets
   async function callAPI(action, data = null) {
@@ -1014,12 +1014,13 @@
             }
             bytes.push(0x0A, 0x0A, 0x0A); // feed 3 lines
 
-            let payload = new Uint8Array(bytes); let chunkSize = 100; 
+            let payload = new Uint8Array(bytes);
+            let chunkSize = 256; // ดันขึ้นเป็น 256 หรือ 512
             for (let i = 0; i < payload.length; i += chunkSize) {
                 let chunk = payload.slice(i, i + chunkSize);
                 if (printCharacteristic.properties.writeWithoutResponse) await printCharacteristic.writeValueWithoutResponse(chunk);
                 else await printCharacteristic.writeValue(chunk);
-                await new Promise(r => setTimeout(r, 15)); 
+                await new Promise(r => setTimeout(r, 5)); // ลดเวลาพักเหลือ 5ms
             }
 
             setTimeout(() => { if (device.gatt.connected) device.gatt.disconnect(); Swal.fire('พิมพ์สำเร็จ!', '', 'success'); }, 1000);
