@@ -17,7 +17,7 @@
     ::-webkit-scrollbar-track { background: #f1f1f1; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-    
+
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -507,7 +507,7 @@
   // =======================================================================
   // 🔴 🔴 🔴 เอา URL ของ Web App จาก Google Apps Script มาใส่ตรงนี้ 🔴 🔴 🔴
   // =======================================================================
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby7vM0fuPbRx5fCpYkypOxaMkNlNwBxKLKzQTyP70I04-YzIuJt8g71S9m7-qap7Vgh/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby7vM0fuPbRx5fCpYkypOxaMkNlNwBxKLKzQTyP70I04-YzIuJt8g71S9m7-qap7Vgh/exec'; 
 
   // ฟังก์ชันยิง API ไปหา Google Sheets
   async function callAPI(action, data = null) {
@@ -526,29 +526,14 @@
   }
 
   const app = {
-    // --- STATE ---
-    data: [], 
-    categories: [], 
-    products: [], 
-    filteredData: [],
-    currentPage: 1, 
-    rowsPerPage: 15, 
-    currentTab: 'all', 
-    sortCol: 'date', 
-    sortAsc: false,
-    charts: { trend: null, cat: null },
-    activeInput: null,
-    lastReceiptData: null,
+    data: [], categories: [], products: [], filteredData: [], currentPage: 1, rowsPerPage: 15, currentTab: 'all', sortCol: 'date', sortAsc: false, charts: { trend: null, cat: null }, activeInput: null, lastReceiptData: null,
 
-    // --- INIT ---
     init: function() {
       setTimeout(() => {
           const loader = document.getElementById('loader');
           if (loader) {
               loader.style.opacity = '0';
-              setTimeout(() => {
-                  loader.classList.add('hidden');
-              }, 500);
+              setTimeout(() => { loader.classList.add('hidden'); }, 500);
           }
       }, 50);
 
@@ -556,88 +541,60 @@
       this.setupListeners();
       
       const multiDate = document.getElementById('multi-date');
-      if(multiDate) {
-          multiDate.valueAsDate = new Date();
-      }
+      if(multiDate) { multiDate.valueAsDate = new Date(); }
 
       document.addEventListener('click', (e) => {
           const dropdown = document.getElementById('global-dropdown');
           if (this.activeInput && !this.activeInput.contains(e.target) && !dropdown.contains(e.target)) {
-              dropdown.style.display = 'none';
-              this.activeInput = null;
+              dropdown.style.display = 'none'; this.activeInput = null;
           }
       });
 
       document.addEventListener('scroll', (e) => {
            const dropdown = document.getElementById('global-dropdown');
            if (e.target === dropdown || dropdown.contains(e.target)) return;
-           if(dropdown.style.display === 'block') {
-               dropdown.style.display = 'none';
-               this.activeInput = null;
-           }
+           if(dropdown.style.display === 'block') { dropdown.style.display = 'none'; this.activeInput = null; }
       }, true);
 
       const scrollArea = document.getElementById('multi-scroll-area');
       if(scrollArea) {
           scrollArea.addEventListener('scroll', () => {
               const dropdown = document.getElementById('global-dropdown');
-              if(dropdown.style.display === 'block') {
-                  dropdown.style.display = 'none';
-                  this.activeInput = null;
-              }
+              if(dropdown.style.display === 'block') { dropdown.style.display = 'none'; this.activeInput = null; }
           });
       }
     },
 
-    // --- WELCOME SCREEN LOGIC ---
     enterApp: function(action) {
         if (action === 'add') {
             this.openMultiModal();
         } else {
             const welcome = document.getElementById('welcome-screen');
             welcome.style.opacity = '0';
-            setTimeout(() => {
-                welcome.classList.add('hidden');
-                this.switchView('dashboard');
-            }, 700);
+            setTimeout(() => { welcome.classList.add('hidden'); this.switchView('dashboard'); }, 700);
         }
     },
 
-    // --- DATA FETCHING (ผ่าน API) ---
     fetchData: function() {
       callAPI('getInitialData').then(res => {
           this.data = res.transactions;
           
-          const pCounts = {};
-          const cCounts = {};
-          
+          const pCounts = {}; const cCounts = {};
           this.data.forEach(t => {
               if (t.product) pCounts[t.product] = (pCounts[t.product] || 0) + 1;
               if (t.category) cCounts[t.category] = (cCounts[t.category] || 0) + 1;
           });
 
-          this.categories = [...new Set(this.data.map(t => t.category))]
-              .filter(String)
-              .sort((a, b) => cCounts[b] - cCounts[a]);
-              
-          this.products = [...new Set(this.data.map(t => t.product))]
-              .filter(String)
-              .sort((a, b) => pCounts[b] - pCounts[a]);
+          this.categories = [...new Set(this.data.map(t => t.category))].filter(String).sort((a, b) => cCounts[b] - cCounts[a]);
+          this.products = [...new Set(this.data.map(t => t.product))].filter(String).sort((a, b) => pCounts[b] - pCounts[a]);
 
-          this.populateYearFilters();
-          this.populateDayFilters();
+          this.populateYearFilters(); this.populateDayFilters();
 
           const today = new Date();
-          const yEl = document.getElementById('dash-year');
-          const mEl = document.getElementById('dash-month');
+          const yEl = document.getElementById('dash-year'); const mEl = document.getElementById('dash-month');
+          if(yEl) yEl.value = today.getFullYear(); if(mEl) mEl.value = today.getMonth();
 
-          if(yEl) yEl.value = today.getFullYear();
-          if(mEl) mEl.value = today.getMonth();
-
-          this.renderDashboard();
-          this.applyFilters();
-          this.renderStock();
-          
+          this.renderDashboard(); this.applyFilters(); this.renderStock();
       }).catch(e => {
           Swal.fire('Error', e.message, 'error');
       });
@@ -646,13 +603,8 @@
     populateYearFilters: function() {
       const years = [...new Set(this.data.map(t => new Date(t.date).getFullYear()))].sort((a,b) => b-a);
       const currentYear = new Date().getFullYear();
-      
-      if (!years.includes(currentYear)) {
-          years.unshift(currentYear);
-      }
-      
+      if (!years.includes(currentYear)) { years.unshift(currentYear); }
       const html = '<option value="all">ทุกปี</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
-
       if(document.getElementById('filter-year')) document.getElementById('filter-year').innerHTML = html;
       if(document.getElementById('dash-year')) document.getElementById('dash-year').innerHTML = html;
     },
@@ -660,55 +612,27 @@
     populateDayFilters: function() {
         const days = Array.from({length: 31}, (_, i) => i + 1);
         const html = '<option value="all">ทุกวัน</option>' + days.map(d => `<option value="${d}">${d}</option>`).join('');
-        
         if(document.getElementById('filter-day')) document.getElementById('filter-day').innerHTML = html;
         if(document.getElementById('dash-day')) document.getElementById('dash-day').innerHTML = html;
     },
 
-    // --- VIEW SWITCHING ---
     switchView: function(viewId) {
       document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-      
       const target = document.getElementById('view-' + viewId);
-      if(target) {
-          target.classList.remove('hidden');
-      }
-
-      document.querySelectorAll('.nav-item').forEach(el => {
-        el.classList.remove('bg-white/10', 'text-white');
-        el.classList.add('text-slate-300');
-      });
-      
+      if(target) { target.classList.remove('hidden'); }
+      document.querySelectorAll('.nav-item').forEach(el => { el.classList.remove('bg-white/10', 'text-white'); el.classList.add('text-slate-300'); });
       const activeNav = document.getElementById('nav-' + viewId);
-      if(activeNav) {
-        activeNav.classList.add('bg-white/10', 'text-white');
-        activeNav.classList.remove('text-slate-300');
-      }
-
-      if(viewId === 'dashboard') {
-          if(target) target.classList.remove('opacity-0');
-          this.renderDashboard();
-      }
+      if(activeNav) { activeNav.classList.add('bg-white/10', 'text-white'); activeNav.classList.remove('text-slate-300'); }
+      if(viewId === 'dashboard') { if(target) target.classList.remove('opacity-0'); this.renderDashboard(); }
     },
 
-    // --- DASHBOARD ---
     renderDashboard: function() {
-      const yEl = document.getElementById('dash-year');
-      const mEl = document.getElementById('dash-month');
-      const dDropEl = document.getElementById('dash-day');
-      const wEl = document.getElementById('dash-week');
-
-      const dSingleEl = document.getElementById('dash-single-date');
-      const dStartEl = document.getElementById('dash-date-start');
-      const dEndEl = document.getElementById('dash-date-end');
-
+      const yEl = document.getElementById('dash-year'); const mEl = document.getElementById('dash-month');
+      const dDropEl = document.getElementById('dash-day'); const wEl = document.getElementById('dash-week');
+      const dSingleEl = document.getElementById('dash-single-date'); const dStartEl = document.getElementById('dash-date-start'); const dEndEl = document.getElementById('dash-date-end');
       if(!yEl || !mEl || !wEl) return;
 
-      const y = yEl.value;
-      const m = mEl.value;
-      const dDrop = dDropEl ? dDropEl.value : 'all';
-      const w = wEl.value;
-
+      const y = yEl.value; const m = mEl.value; const dDrop = dDropEl ? dDropEl.value : 'all'; const w = wEl.value;
       const dSingle = dSingleEl && dSingleEl.value ? new Date(dSingleEl.value).setHours(0,0,0,0) : null;
       const dStart = dStartEl && dStartEl.value ? new Date(dStartEl.value).setHours(0,0,0,0) : null;
       const dEnd = dEndEl && dEndEl.value ? new Date(dEndEl.value).setHours(23,59,59,999) : null;
@@ -739,17 +663,11 @@
       document.getElementById('kpi-profit').textContent = profit.toLocaleString(undefined, {minimumFractionDigits:2}) + ' ฿';
 
       let profitPercent = 0;
-      if(totalSales > 0) {
-          profitPercent = Math.max(0, Math.min(100, (profit / totalSales) * 100));
-      }
-      
+      if(totalSales > 0) { profitPercent = Math.max(0, Math.min(100, (profit / totalSales) * 100)); }
       const profitBar = document.getElementById('profit-bar');
-      if(profitBar) {
-          profitBar.style.width = profitPercent + '%';
-      }
+      if(profitBar) { profitBar.style.width = profitPercent + '%'; }
 
       const recentTable = document.getElementById('dashboard-recent-table');
-
       const recentItems = [...filtered].sort((a,b) => {
           const dateDiff = b.date - a.date;
           if (dateDiff !== 0) return dateDiff;
@@ -763,22 +681,17 @@
               <tr class="hover:bg-slate-50 transition">
                   <td class="px-6 py-3 text-xs md:text-sm">${new Date(t.date).toLocaleDateString('th-TH')}</td>
                   <td class="px-6 py-3 text-slate-800 font-medium text-xs md:text-sm">${t.product}</td>
-                  <td class="px-6 py-3">
-                      <span class="px-2 py-0.5 rounded text-[10px] md:text-xs font-bold ${t.type==='ขาย' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${t.type}</span>
-                  </td>
+                  <td class="px-6 py-3"><span class="px-2 py-0.5 rounded text-[10px] md:text-xs font-bold ${t.type==='ขาย' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${t.type}</span></td>
                   <td class="px-6 py-3 text-right font-bold text-slate-600 text-xs md:text-sm">${t.total.toLocaleString()}</td>
               </tr>
           `).join('');
       }
-
       this.renderCharts(filtered);
     },
 
     renderCharts: function(data) {
       const ctxTrend = document.getElementById('chart-trend').getContext('2d');
-      if (this.charts.trend) {
-          this.charts.trend.destroy();
-      }
+      if (this.charts.trend) { this.charts.trend.destroy(); }
 
       const groupedData = {};
       data.forEach(t => {
@@ -789,12 +702,8 @@
           : `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
 
         if (!groupedData[key]) groupedData[key] = { sales: 0, cost: 0 };
-        if (t.type === 'ขาย') {
-            groupedData[key].sales += t.total;
-        }
-        if (t.type === 'ซื้อ') {
-            groupedData[key].cost += t.total;
-        }
+        if (t.type === 'ขาย') { groupedData[key].sales += t.total; }
+        if (t.type === 'ซื้อ') { groupedData[key].cost += t.total; }
       });
 
       const sortedKeys = Object.keys(groupedData).sort();
@@ -808,117 +717,67 @@
         data: {
           labels: labels,
           datasets: [
-            {
-              label: 'รายได้',
-              data: sortedKeys.map(k => groupedData[k].sales),
-              backgroundColor: '#4f46e5',
-              borderRadius: 4
-            },
-            {
-              label: 'รายจ่าย',
-              data: sortedKeys.map(k => groupedData[k].cost),
-              backgroundColor: '#f43f5e',
-              borderRadius: 4
-            }
+            { label: 'รายได้', data: sortedKeys.map(k => groupedData[k].sales), backgroundColor: '#4f46e5', borderRadius: 4 },
+            { label: 'รายจ่าย', data: sortedKeys.map(k => groupedData[k].cost), backgroundColor: '#f43f5e', borderRadius: 4 }
           ]
         },
         options: {
-          responsive: true, 
-          maintainAspectRatio: false,
+          responsive: true, maintainAspectRatio: false,
           interaction: { mode: 'index', intersect: false },
           plugins: { legend: { position: 'top', align: 'end' } },
-          scales: {
-              x: { grid: { display: false } },
-              y: { grid: { borderDash: [5, 5] }, beginAtZero: true }
-          }
+          scales: { x: { grid: { display: false } }, y: { grid: { borderDash: [5, 5] }, beginAtZero: true } }
         }
       });
 
       const ctxCat = document.getElementById('chart-category').getContext('2d');
-      if (this.charts.cat) {
-          this.charts.cat.destroy();
-      }
+      if (this.charts.cat) { this.charts.cat.destroy(); }
       
       const productSales = {};
-      data.filter(t => t.type === 'ขาย').forEach(t => { 
-          productSales[t.product] = (productSales[t.product] || 0) + t.total; 
-      });
-      
+      data.filter(t => t.type === 'ขาย').forEach(t => { productSales[t.product] = (productSales[t.product] || 0) + t.total; });
       const topProducts = Object.entries(productSales).sort((a,b) => b[1] - a[1]).slice(0, 5);
 
       this.charts.cat = new Chart(ctxCat, {
         type: 'doughnut', 
         data: { 
             labels: topProducts.map(p => p[0]), 
-            datasets: [{ 
-                data: topProducts.map(p => p[1]), 
-                backgroundColor: ['#4f46e5', '#f43f5e', '#0ea5e9', '#8b5cf6', '#10b981'], 
-                borderWidth: 0 
-            }] 
+            datasets: [{ data: topProducts.map(p => p[1]), backgroundColor: ['#4f46e5', '#f43f5e', '#0ea5e9', '#8b5cf6', '#10b981'], borderWidth: 0 }] 
         },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false, 
-            cutout: '70%', 
-            plugins: { legend: { position: 'right' } } 
-        }
+        options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'right' } } }
       });
     },
 
-    // --- LIST / FILTER ---
     filterType: function(type) {
-      this.currentTab = type; 
-      this.currentPage = 1;
-      
+      this.currentTab = type; this.currentPage = 1;
       ['all', 'buy', 'sell'].forEach(t => {
          let btnId = 'tab-all';
          if(t === 'buy') btnId = 'tab-buy';
          if(t === 'sell') btnId = 'tab-sell';
          const btn = document.getElementById(btnId);
-         if(btn) {
-             btn.className = "px-3 md:px-5 py-1.5 md:py-2 rounded-md md:rounded-lg font-medium transition text-slate-500 hover:bg-slate-50";
-         }
+         if(btn) { btn.className = "px-3 md:px-5 py-1.5 md:py-2 rounded-md md:rounded-lg font-medium transition text-slate-500 hover:bg-slate-50"; }
       });
 
       let activeId = 'tab-all';
       if(type === 'ซื้อ') activeId = 'tab-buy';
       if(type === 'ขาย') activeId = 'tab-sell';
-      
       const activeBtn = document.getElementById(activeId);
-      if(activeBtn) {
-          activeBtn.className = "px-3 md:px-5 py-1.5 md:py-2 rounded-md md:rounded-lg font-medium transition bg-slate-800 text-white shadow";
-      }
-      
+      if(activeBtn) { activeBtn.className = "px-3 md:px-5 py-1.5 md:py-2 rounded-md md:rounded-lg font-medium transition bg-slate-800 text-white shadow"; }
       this.applyFilters();
     },
 
     sortData: function(col) {
-      if(this.sortCol === col) {
-          this.sortAsc = !this.sortAsc; 
-      } else { 
-          this.sortCol = col; 
-          this.sortAsc = true; 
-      }
+      if(this.sortCol === col) { this.sortAsc = !this.sortAsc; } else { this.sortCol = col; this.sortAsc = true; }
       this.applyFilters();
     },
 
     applyFilters: function() {
       const searchEl = document.getElementById('search-input');
-      const yEl = document.getElementById('filter-year');
-      const mEl = document.getElementById('filter-month');
-      const dDropEl = document.getElementById('filter-day');
-      const wEl = document.getElementById('filter-week');
-
-      const dSingleEl = document.getElementById('filter-single-date');
-      const dStartEl = document.getElementById('filter-date-start');
-      const dEndEl = document.getElementById('filter-date-end');
+      const yEl = document.getElementById('filter-year'); const mEl = document.getElementById('filter-month');
+      const dDropEl = document.getElementById('filter-day'); const wEl = document.getElementById('filter-week');
+      const dSingleEl = document.getElementById('filter-single-date'); const dStartEl = document.getElementById('filter-date-start'); const dEndEl = document.getElementById('filter-date-end');
 
       const search = searchEl ? searchEl.value.toLowerCase() : '';
-      const y = yEl ? yEl.value : 'all';
-      const m = mEl ? mEl.value : 'all';
-      const dDrop = dDropEl ? dDropEl.value : 'all';
-      const w = wEl ? wEl.value : 'all';
-
+      const y = yEl ? yEl.value : 'all'; const m = mEl ? mEl.value : 'all';
+      const dDrop = dDropEl ? dDropEl.value : 'all'; const w = wEl ? wEl.value : 'all';
       const dSingle = dSingleEl && dSingleEl.value ? new Date(dSingleEl.value).setHours(0,0,0,0) : null;
       const dStart = dStartEl && dStartEl.value ? new Date(dStartEl.value).setHours(0,0,0,0) : null;
       const dEnd = dEndEl && dEndEl.value ? new Date(dEndEl.value).setHours(23,59,59,999) : null;
@@ -934,7 +793,6 @@
 
         const matchSearch = t.product.toLowerCase().includes(search) || t.category.toLowerCase().includes(search);
         const matchTab = this.currentTab === 'all' || t.type === this.currentTab;
-
         const matchY = y === 'all' || d.getFullYear() == y;
         const matchM = m === 'all' || d.getMonth() == m;
         const matchD = dDrop === 'all' || d.getDate() == dDrop;
@@ -944,22 +802,13 @@
       });
 
       temp.sort((a,b) => {
-        let vA = a[this.sortCol];
-        let vB = b[this.sortCol];
-
+        let vA = a[this.sortCol]; let vB = b[this.sortCol];
         if (this.sortCol === 'date') {
-            if (vA === vB) {
-                return this.sortAsc ? a.id - b.id : b.id - a.id;
-            }
+            if (vA === vB) { return this.sortAsc ? a.id - b.id : b.id - a.id; }
             return this.sortAsc ? vA - vB : vB - vA;
         }
-
-        if(typeof vA === 'string') vA = vA.toLowerCase(); 
-        if(typeof vB === 'string') vB = vB.toLowerCase();
-        
-        if(vA < vB) return this.sortAsc ? -1 : 1; 
-        if(vA > vB) return this.sortAsc ? 1 : -1; 
-        return 0;
+        if(typeof vA === 'string') vA = vA.toLowerCase(); if(typeof vB === 'string') vB = vB.toLowerCase();
+        if(vA < vB) return this.sortAsc ? -1 : 1; if(vA > vB) return this.sortAsc ? 1 : -1; return 0;
       });
 
       this.filteredData = temp;
@@ -969,15 +818,13 @@
     renderTable: function() {
       const tbody = document.getElementById('table-transactions');
       if(!tbody) return;
-      
       tbody.innerHTML = '';
       const start = (this.currentPage - 1) * this.rowsPerPage;
       const pageData = this.filteredData.slice(start, start + this.rowsPerPage);
 
       if(pageData.length === 0) {
           tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">ไม่พบข้อมูล</td></tr>`;
-          this.renderPagination(0);
-          return;
+          this.renderPagination(0); return;
       }
 
       pageData.forEach(t => {
@@ -1001,19 +848,13 @@
             </td>`;
         tbody.appendChild(tr);
       });
-      
       this.renderPagination(Math.ceil(this.filteredData.length / this.rowsPerPage));
     },
 
     renderPagination: function(totalPages) {
         const div = document.getElementById('pagination');
         if(!div) return;
-        
-        if(totalPages === 0) { 
-            div.innerHTML=''; 
-            return; 
-        }
-        
+        if(totalPages === 0) { div.innerHTML=''; return; }
         div.innerHTML = `
         <span>หน้า ${this.currentPage}/${totalPages} (${this.filteredData.length} รายการ)</span>
         <div class="space-x-2">
@@ -1022,16 +863,9 @@
         </div>`;
     },
     
-    changePage: function(d) { 
-        this.currentPage += d; 
-        this.renderTable(); 
-    },
-    
-    getWeekOfMonth: function(date) { 
-        return Math.ceil(new Date(date).getDate() / 7); 
-    },
+    changePage: function(d) { this.currentPage += d; this.renderTable(); },
+    getWeekOfMonth: function(date) { return Math.ceil(new Date(date).getDate() / 7); },
 
-    // --- MULTI-MODAL (เพิ่มรายการ) ---
     openMultiModal: function() {
         document.getElementById('modal-multi').classList.remove('hidden');
         document.getElementById('multi-items-body').innerHTML = '';
@@ -1052,25 +886,17 @@
         this.updateInfoDashboard(null);
 
         document.getElementById('multi-grand-total').textContent = '0.00';
-        
         const dateInput = document.getElementById('multi-date');
-        if(dateInput) {
-            dateInput.valueAsDate = new Date();
-        }
+        if(dateInput) { dateInput.valueAsDate = new Date(); }
     },
 
-    closeMultiModal: function() {
-        document.getElementById('modal-multi').classList.add('hidden');
-    },
+    closeMultiModal: function() { document.getElementById('modal-multi').classList.add('hidden'); },
 
     createInputHTML: function(type, rowId) {
         const ph = type === 'cat' ? 'เลือกหมวดหมู่' : 'เลือกสินค้า';
         return `<input type="text" name="${type}"
                 class="modal-input w-full border border-slate-300 rounded outline-none bg-white transition focus:ring-2 focus:ring-indigo-500 cursor-pointer caret-transparent"
-                placeholder="${ph}"
-                readonly
-                onclick="app.showDropdown(this, '${type}')"
-                autocomplete="off">`;
+                placeholder="${ph}" readonly onclick="app.showDropdown(this, '${type}')" autocomplete="off">`;
     },
 
     showDropdown: function(input, type) {
@@ -1088,15 +914,11 @@
         } else {
             const row = input.closest('.multi-row');
             const catVal = row.querySelector('[name="cat"]').value.trim();
-            
             if (catVal) {
                 const catData = this.data.filter(t => t.category === catVal);
                 const pCountsLocal = {};
                 catData.forEach(t => { pCountsLocal[t.product] = (pCountsLocal[t.product] || 0) + 1; });
-                
-                const productsInCat = [...new Set(catData.map(t => t.product))]
-                    .sort((a,b) => pCountsLocal[b] - pCountsLocal[a]);
-                    
+                const productsInCat = [...new Set(catData.map(t => t.product))].sort((a,b) => pCountsLocal[b] - pCountsLocal[a]);
                 items = productsInCat.length > 0 ? productsInCat : this.products;
             } else {
                 items = this.products;
@@ -1110,7 +932,6 @@
     renderDropdownItems: function(items, type) {
         const dropdown = document.getElementById('global-dropdown');
         let html = '';
-        
         const title = type === 'cat' ? 'หมวดหมู่' : 'สินค้า';
         
         html += `<div class="p-2 border-b border-slate-200 bg-indigo-50 text-indigo-700 font-bold hover:bg-indigo-100 cursor-pointer transition flex items-center gap-2 text-xs md:text-sm" onclick="app.promptAddNew('${type}')">
@@ -1124,24 +945,19 @@
                 `<div class="dropdown-item text-xs md:text-sm" onclick="app.selectItem('${item.replace(/'/g, "\\'")}', '${type}')">${item}</div>`
             ).join('');
         }
-        
         dropdown.innerHTML = html;
     },
 
     promptAddNew: function(type) {
         const currentInput = this.activeInput; 
         document.getElementById('global-dropdown').style.display = 'none';
-        
         const title = type === 'cat' ? 'หมวดหมู่' : 'สินค้า';
         
         Swal.fire({
             title: `เพิ่ม${title}ใหม่`,
             input: 'text',
             inputPlaceholder: `พิมพ์ชื่อ${title}ที่นี่...`,
-            showCancelButton: true,
-            confirmButtonText: 'ตกลง',
-            cancelButtonText: 'ยกเลิก',
-            confirmButtonColor: '#4f46e5',
+            showCancelButton: true, confirmButtonText: 'ตกลง', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#4f46e5',
         }).then((result) => {
             if (result.isConfirmed && result.value) {
                 if (currentInput) {
@@ -1159,7 +975,6 @@
 
     selectItem: function(val, type) {
         if (!this.activeInput) return;
-        
         this.activeInput.value = val;
         document.getElementById('global-dropdown').style.display = 'none';
 
@@ -1172,9 +987,7 @@
             if (history) {
                 catInput.value = history.category;
                 const unitInput = row.querySelector('[name="unit"]');
-                if(!unitInput.value) {
-                    unitInput.value = history.unit;
-                }
+                if(!unitInput.value) { unitInput.value = history.unit; }
 
                 const currentType = document.getElementById('multi-type').value;
                 if (currentType === 'ซื้อ') {
@@ -1202,40 +1015,32 @@
               <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded">รายการที่ ${rowIdx}</span>
               <button onclick="this.closest('.multi-row').remove();app.calcMultiTotal()" class="text-rose-400 hover:text-rose-600 px-2 py-0.5 hover:bg-rose-50 rounded transition font-bold text-[10px] uppercase tracking-wider"><i class="fa-solid fa-trash mr-1"></i>ลบ</button>
            </div>
-
            <div class="grid grid-cols-6 md:flex md:flex-row md:items-center gap-1.5 md:gap-0">
               <div class="hidden md:block w-8 text-center text-slate-400 text-[10px]">${rowIdx}</div>
-
               <div class="col-span-6 md:w-48 md:px-1">
                  <label class="md:hidden text-[10px] text-slate-500 font-bold mb-0.5 block">หมวดหมู่</label>
                  ${this.createInputHTML('cat', rowId)}
               </div>
-
               <div class="col-span-6 md:flex-1 md:px-1 relative">
                  <label class="md:hidden text-[10px] text-slate-500 font-bold mb-0.5 block">ชื่อสินค้า</label>
                  ${this.createInputHTML('prod', rowId)}
               </div>
-
               <div class="col-span-2 md:w-20 md:px-1">
                  <label class="md:hidden text-[10px] text-slate-500 font-bold mb-0.5 block">ราคา</label>
                  <input type="number" inputmode="decimal" name="price" class="modal-input w-full border border-slate-300 rounded text-right outline-none focus:ring-2 focus:ring-indigo-500 transition" step="0.01" oninput="app.calcMultiTotal()" onclick="this.select()">
               </div>
-
               <div class="col-span-2 md:w-20 md:px-1">
                  <label class="md:hidden text-[10px] text-slate-500 font-bold mb-0.5 block">จำนวน</label>
                  <input type="number" inputmode="decimal" name="qty" class="modal-input w-full border border-slate-300 rounded text-right outline-none focus:ring-2 focus:ring-indigo-500 transition" step="0.01" oninput="app.calcMultiTotal()" onclick="this.select()">
               </div>
-
               <div class="col-span-2 md:w-16 md:px-1">
                  <label class="md:hidden text-[10px] text-slate-500 font-bold mb-0.5 block">หน่วย</label>
                  <input type="text" name="unit" class="modal-input w-full border border-slate-300 rounded text-center outline-none focus:ring-2 focus:ring-indigo-500 transition" placeholder="หน่วย" onclick="this.select()">
               </div>
-
               <div class="col-span-6 md:w-24 md:px-2 text-right bg-slate-50 md:bg-transparent p-1.5 md:p-0 rounded flex flex-row md:flex-col justify-between md:justify-center items-center mt-1 md:mt-0">
                  <label class="md:hidden text-[10px] text-slate-500 font-bold block text-right">ยอดรวม</label>
                  <span class="font-bold text-indigo-600 md:text-slate-700 row-total text-sm block">0.00</span>
               </div>
-
               <div class="hidden md:block w-8 text-center">
                  <button onclick="this.closest('.multi-row').remove();app.calcMultiTotal()" class="text-slate-300 hover:text-rose-500 p-1 rounded-full hover:bg-rose-50 transition"><i class="fa-solid fa-trash"></i></button>
               </div>
@@ -1250,22 +1055,16 @@
            const p = parseFloat(row.querySelector('[name="price"]').value) || 0;
            const q = parseFloat(row.querySelector('[name="qty"]').value) || 0;
            const total = p * q;
-           
            row.querySelector('.row-total').textContent = total.toLocaleString(undefined, {minimumFractionDigits:2});
            grandTotal += total;
         });
-        
         const totalDisplay = document.getElementById('multi-grand-total');
-        if(totalDisplay) {
-            totalDisplay.textContent = grandTotal.toLocaleString(undefined, {minimumFractionDigits:2});
-        }
+        if(totalDisplay) { totalDisplay.textContent = grandTotal.toLocaleString(undefined, {minimumFractionDigits:2}); }
     },
 
     updateInfoDashboard: function(productName) {
-        const nameEl = document.getElementById('info-name');
-        const stockEl = document.getElementById('info-stock');
-        const buyEl = document.getElementById('info-buy');
-        const sellEl = document.getElementById('info-sell');
+        const nameEl = document.getElementById('info-name'); const stockEl = document.getElementById('info-stock');
+        const buyEl = document.getElementById('info-buy'); const sellEl = document.getElementById('info-sell');
 
         if(!productName) {
             if(nameEl) nameEl.textContent = 'ยังไม่ได้เลือกสินค้า';
@@ -1278,107 +1077,79 @@
         }
         
         if(nameEl) nameEl.textContent = productName;
-        
         const history = this.data.filter(t => t.product === productName).sort((a,b) => b.date - a.date);
-        const buy = history.find(t => t.type === 'ซื้อ');
-        const sell = history.find(t => t.type === 'ขาย');
-
+        const buy = history.find(t => t.type === 'ซื้อ'); const sell = history.find(t => t.type === 'ขาย');
         const stock = history.reduce((acc, t) => t.type === 'ซื้อ' ? acc + t.quantity : acc - t.quantity, 0);
         const stockDisplay = Math.round(stock * 100) / 100;
 
-        if (stockEl) {
-            stockEl.textContent = stockDisplay.toLocaleString();
-        }
-        
+        if (stockEl) { stockEl.textContent = stockDisplay.toLocaleString(); }
         const mobileStockEl = document.getElementById('info-stock-mobile');
-        if (mobileStockEl) {
-            mobileStockEl.textContent = stockDisplay.toLocaleString();
-        }
-
-        if (buyEl) {
-            buyEl.textContent = buy ? buy.price.toLocaleString() : '-';
-        }
-        if (sellEl) {
-            sellEl.textContent = sell ? sell.price.toLocaleString() : '-';
-        }
+        if (mobileStockEl) { mobileStockEl.textContent = stockDisplay.toLocaleString(); }
+        if (buyEl) { buyEl.textContent = buy ? buy.price.toLocaleString() : '-'; }
+        if (sellEl) { sellEl.textContent = sell ? sell.price.toLocaleString() : '-'; }
     },
-showPrintModal: function(data, pdfUrl) {
+
+    // 🌟 หน้าต่างพิมพ์บิล / เปิด PDF
+    showPrintModal: function(data, pdfUrl) {
         let modal = document.getElementById('native-print-modal');
-        // ลบอันเก่าทิ้งเพื่อรีเซ็ตปุ่มใหม่เสมอ
-        if (modal) modal.remove();
+        if (modal) modal.remove(); // ลบของเก่าออกเพื่อรีเซ็ตปุ่ม
 
         modal = document.createElement('div');
         modal.id = 'native-print-modal';
         modal.className = 'fixed inset-0 bg-slate-900/80 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity';
         
         modal.innerHTML = `
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 flex flex-col gap-3 transform transition-all scale-100">
-                <h3 class="text-xl font-bold text-center text-slate-800 border-b pb-3 border-slate-100">🧾 จัดการใบเสร็จ</h3>
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 flex flex-col gap-4 transform transition-all scale-100">
+                <h3 class="text-xl font-bold text-center text-slate-800 border-b pb-3 border-slate-100">🖨️ พิมพ์ใบเสร็จ</h3>
+                
+                <div id="pdf-btn-container"></div>
 
-                ${pdfUrl ? `
-                <button id="btn-view-pdf" class="w-full py-3 bg-emerald-500 text-white rounded-xl font-bold text-base shadow-md hover:bg-emerald-600 transition flex justify-center items-center gap-2">
-                    <i class="fa-solid fa-file-pdf text-xl"></i> ดูบิล (PDF)
-                </button>
-                ` : ''}
-
-                <button id="btn-print-bt" class="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-base shadow-md hover:bg-blue-700 transition flex justify-center items-center gap-2">
+                <button id="btn-print-bt" class="w-full py-4 bg-blue-600 text-white rounded-xl font-bold text-lg shadow-md hover:bg-blue-700 transition flex justify-center items-center gap-2">
                     <i class="fa-brands fa-bluetooth text-xl"></i> พิมพ์ผ่าน Bluetooth
                 </button>
 
-                <button onclick="document.getElementById('native-print-modal').remove()" class="w-full py-2 mt-2 bg-white border-2 border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition">
+                <button onclick="document.getElementById('native-print-modal').classList.add('hidden')" class="w-full py-2 mt-2 bg-white border-2 border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50 transition">
                     ปิดหน้าต่าง
                 </button>
             </div>
         `;
         document.body.appendChild(modal);
 
-        // ใส่คำสั่งให้ปุ่มดูบิล
+        const pdfContainer = document.getElementById('pdf-btn-container');
         if (pdfUrl) {
-            document.getElementById('btn-view-pdf').addEventListener('click', () => {
-                window.open(pdfUrl, '_blank');
-            });
+            pdfContainer.innerHTML = `
+                <button onclick="window.open('${pdfUrl}', '_blank')" class="w-full mb-1 py-4 bg-emerald-500 text-white rounded-xl font-bold text-lg shadow-md hover:bg-emerald-600 transition flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-file-pdf text-xl"></i> ดูบิล (PDF)
+                </button>
+            `;
         }
 
-        // ใส่คำสั่งให้ปุ่ม Bluetooth
         document.getElementById('btn-print-bt').addEventListener('click', function(e) {
             e.preventDefault();
-            modal.classList.add('hidden');
+            document.getElementById('native-print-modal').classList.add('hidden');
             app.printWebBluetooth(app.lastReceiptData);
         });
-
-        app.lastReceiptData = data;
-    },
 
         app.lastReceiptData = data;
         modal.classList.remove('hidden');
     },
 
-    // พิมพ์ Bluetooth (สำหรับ Android)
+    // พิมพ์ Bluetooth (พร้อมภาษาไทย)
     printWebBluetooth: async function(data) {
         try {
             if (!navigator.bluetooth) {
-                alert("เบราว์เซอร์นี้ไม่รองรับการพิมพ์ผ่าน Bluetooth\nหากใช้ iOS กรุณาเลือกพิมพ์ผ่าน AirPrint แทนครับ");
-                return;
+                alert("เบราว์เซอร์นี้ไม่รองรับการพิมพ์ผ่าน Bluetooth"); return;
             }
 
             const device = await navigator.bluetooth.requestDevice({
                 acceptAllDevices: true,
                 optionalServices: [
-                    '000018f0-0000-1000-8000-00805f9b34fb', 
-                    '49535343-fe7d-4ae5-8fa9-9fafd205e455', 
-                    'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
-                    '0000180a-0000-1000-8000-00805f9b34fb',
-                    '0000ff00-0000-1000-8000-00805f9b34fb',
-                    '0000fee7-0000-1000-8000-00805f9b34fb' 
+                    '000018f0-0000-1000-8000-00805f9b34fb', '49535343-fe7d-4ae5-8fa9-9fafd205e455', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
+                    '0000180a-0000-1000-8000-00805f9b34fb', '0000ff00-0000-1000-8000-00805f9b34fb', '0000fee7-0000-1000-8000-00805f9b34fb' 
                 ]
             });
 
-            Swal.fire({ 
-                title: 'กำลังส่งข้อมูลไปเครื่องปริ้นท์...', 
-                text: 'กรุณารอสักครู่ (ห้ามปิดหน้าจอ)',
-                allowOutsideClick: false, 
-                didOpen: () => Swal.showLoading() 
-            });
+            Swal.fire({ title: 'กำลังส่งข้อมูลไปเครื่องปริ้นท์...', text: 'กรุณารอสักครู่ (ห้ามปิดหน้าจอ)', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
             await new Promise(resolve => setTimeout(resolve, 300));
             const server = await device.gatt.connect();
@@ -1388,17 +1159,12 @@ showPrintModal: function(data, pdfUrl) {
             for (let service of services) {
                 const characteristics = await service.getCharacteristics();
                 for (let char of characteristics) {
-                    if (char.properties.writeWithoutResponse || char.properties.write) {
-                        printCharacteristic = char;
-                        break;
-                    }
+                    if (char.properties.writeWithoutResponse || char.properties.write) { printCharacteristic = char; break; }
                 }
                 if (printCharacteristic) break;
             }
 
-            if (!printCharacteristic) {
-                throw new Error('ไม่สามารถคุยกับเครื่องปริ้นท์นี้ได้');
-            }
+            if (!printCharacteristic) { throw new Error('ไม่สามารถคุยกับเครื่องปริ้นท์นี้ได้'); }
 
             const d = new Date(data.date);
             const dateStr = d.toLocaleDateString('th-TH') + ' ' + d.toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'});
@@ -1416,10 +1182,8 @@ showPrintModal: function(data, pdfUrl) {
                 text += item.product + "\n";
                 let line2 = "  " + item.quantity + " " + item.unit + " x " + item.price;
                 let totalStr = (item.price * item.quantity).toLocaleString();
-                
                 let spaces = 32 - line2.length - totalStr.length;
                 if(spaces < 1) spaces = 1;
-                
                 text += line2 + " ".repeat(spaces) + totalStr + "\n";
             });
             
@@ -1427,15 +1191,14 @@ showPrintModal: function(data, pdfUrl) {
             let totalTitle = "ยอดรวมทั้งสิ้น";
             let totalVal = data.total.toLocaleString() + " B";
             let space2 = 32 - totalTitle.length - totalVal.length;
-            
             text += totalTitle + " ".repeat(space2 > 0 ? space2 : 1) + totalVal + "\n";
             text += "--------------------------------\n";
             text += "       ขอบคุณที่ใช้บริการ\n\n\n\n";
 
             let bytes = [];
-            bytes.push(0x1B, 0x40); 
-            bytes.push(0x1C, 0x2E); 
-            bytes.push(0x1B, 0x74, 26);
+            bytes.push(0x1B, 0x40); // Reset
+            bytes.push(0x1C, 0x2E); // Close Chinese mode
+            bytes.push(0x1B, 0x74, 26); // Thai Code Page (เปลี่ยน 26 เป็น 11, 21, 255 ถ้าไม่ออก)
             
             for (let i = 0; i < text.length; i++) {
                 let code = text.charCodeAt(i);
@@ -1449,17 +1212,14 @@ showPrintModal: function(data, pdfUrl) {
             }
 
             let payload = new Uint8Array(bytes);
-            
             let chunkSize = 20; 
             for (let i = 0; i < payload.length; i += chunkSize) {
                 let chunk = payload.slice(i, i + chunkSize);
-                
                 if (printCharacteristic.properties.writeWithoutResponse) {
                     await printCharacteristic.writeValueWithoutResponse(chunk);
                 } else {
                     await printCharacteristic.writeValue(chunk);
                 }
-                
                 await new Promise(resolve => setTimeout(resolve, 80)); 
             }
 
@@ -1471,7 +1231,6 @@ showPrintModal: function(data, pdfUrl) {
         } catch (err) {
             console.error(err);
             Swal.close();
-            
             if (err.name === 'NotFoundError') {
                 return; 
             } else if (err.name === 'SecurityError') {
@@ -1479,88 +1238,11 @@ showPrintModal: function(data, pdfUrl) {
             } else {
                 alert('เกิดข้อผิดพลาดในการเชื่อมต่อ:\n' + err.message);
             }
-            
             const printModal = document.getElementById('native-print-modal');
             if (printModal) printModal.classList.remove('hidden');
         }
     },
 
-    // พิมพ์ AirPrint / เครื่อง PC
-    printThermalReceipt: function(data) {
-        const d = new Date(data.date);
-        const dateStr = d.toLocaleDateString('th-TH') + ' ' + d.toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'});
-
-        let html = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>ใบเสร็จรับเงิน</title>
-            <style>
-                @page { margin: 0; size: 58mm auto; }
-                body { 
-                    font-family: 'Sarabun', 'Cordia New', sans-serif; 
-                    font-size: 12px; 
-                    width: 58mm; 
-                    padding: 5px; 
-                    margin: 0 auto; 
-                    color: #000; 
-                }
-                .text-center { text-align: center; }
-                .text-right { text-align: right; }
-                .text-left { text-align: left; }
-                .bold { font-weight: bold; }
-                .line { border-top: 1px dashed #000; margin: 5px 0; }
-                table { width: 100%; border-collapse: collapse; font-size: 11px; }
-                th, td { padding: 2px 0; vertical-align: top; }
-            </style>
-        </head>
-        <body>
-            <div class="text-center bold" style="font-size:16px;">ร้าน บ้านนาค้าของเก่า</div>
-            <div class="text-center">โทร : 082-447-8795</div>
-            <div class="line"></div>
-            <div>เลขที่: ${data.receiptNumber}</div>
-            <div>วันที่: ${dateStr}</div>
-            <div>ประเภท: ${data.type}</div>
-            <div class="line"></div>
-            <table>
-                <tr>
-                    <th class="text-left" style="width:35%;">สินค้า</th>
-                    <th class="text-center" style="width:15%;">จำนวน</th>
-                    <th class="text-right" style="width:25%;">ราคา</th>
-                    <th class="text-right" style="width:25%;">รวม</th>
-                </tr>
-                ${data.items.map(item => `
-                    <tr>
-                        <td>${item.product}</td>
-                        <td class="text-center">${item.quantity}</td>
-                        <td class="text-right">${item.price.toLocaleString()}</td>
-                        <td class="text-right">${(item.price * item.quantity).toLocaleString(undefined, {minimumFractionDigits:2})}</td>
-                    </tr>
-                `).join('')}
-            </table>
-            <div class="line"></div>
-            <table>
-                <tr>
-                    <td class="bold">ยอดรวมทั้งสิ้น</td>
-                    <td class="text-right bold" style="font-size:14px;">${data.total.toLocaleString(undefined, {minimumFractionDigits:2})} ฿</td>
-                </tr>
-            </table>
-            <div class="line"></div>
-            <div class="text-center" style="font-size:10px;">ขอบคุณที่ใช้บริการ</div>
-            <script>
-                window.onload = function() { window.print(); }
-            <\/script>
-        </body>
-        </html>
-        `;
-
-        const printWin = window.open('', '_blank', 'width=300,height=500');
-        printWin.document.write(html);
-        printWin.document.close();
-    },
-
-    // --- บันทึกข้อมูล (ผ่าน API) ---
     saveMultiItems: function() {
         const date = document.getElementById('multi-date').value;
         const type = document.getElementById('multi-type').value;
@@ -1621,7 +1303,6 @@ showPrintModal: function(data, pdfUrl) {
         });
     },
 
-    // --- พิมพ์ย้อนหลัง (ผ่าน API) ---
     reprintReceipt: function(timestamp, type) {
         const itemsToPrint = this.data.filter(t => t.date === timestamp && t.type === type);
         if(itemsToPrint.length === 0) return;
@@ -1662,7 +1343,6 @@ showPrintModal: function(data, pdfUrl) {
         });
     },
 
-    // --- แก้ไข (ผ่าน API) ---
     openEditModal: function(id) {
         const item = this.data.find(t => t.id === id); 
         if(!item) return;
@@ -1711,7 +1391,6 @@ showPrintModal: function(data, pdfUrl) {
         });
     },
 
-    // --- ลบ (ผ่าน API) ---
     deleteItem: function(id) {
       Swal.fire({ 
           title: 'ยืนยันลบ?', 
@@ -1736,33 +1415,17 @@ showPrintModal: function(data, pdfUrl) {
 
       [...this.data].sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(t => {
          const k = t.category + '-' + t.product;
-         
-         if(!inv[k]) {
-             inv[k] = { n: t.product, c: t.category, q: 0, u: t.unit, lastBuy:'-', lastSell:'-' };
-         }
-         
-         if(t.type === 'ซื้อ') { 
-             inv[k].q += t.quantity; 
-             inv[k].lastBuy = t.price; 
-         } else { 
-             inv[k].q -= t.quantity; 
-             inv[k].lastSell = t.price; 
-         }
-         
-         inv[k].q = Math.round(inv[k].q * 100) / 100; 
-         inv[k].u = t.unit;
+         if(!inv[k]) { inv[k] = { n: t.product, c: t.category, q: 0, u: t.unit, lastBuy:'-', lastSell:'-' }; }
+         if(t.type === 'ซื้อ') { inv[k].q += t.quantity; inv[k].lastBuy = t.price; } else { inv[k].q -= t.quantity; inv[k].lastSell = t.price; }
+         inv[k].q = Math.round(inv[k].q * 100) / 100; inv[k].u = t.unit;
       });
 
       const div = document.getElementById('stock-cards');
       if(!div) return;
-      
       div.innerHTML = '';
 
       Object.values(inv).forEach(i => {
-         if(stockSearch && !i.n.toLowerCase().includes(stockSearch) && !i.c.toLowerCase().includes(stockSearch)) {
-             return;
-         }
-
+         if(stockSearch && !i.n.toLowerCase().includes(stockSearch) && !i.c.toLowerCase().includes(stockSearch)) { return; }
          const isLow = i.q <= 5;
          div.innerHTML += `
          <div class="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group h-full">
@@ -1798,23 +1461,15 @@ showPrintModal: function(data, pdfUrl) {
 
     setupListeners: function() {
        const searchInput = document.getElementById('search-input');
-       if(searchInput) {
-           searchInput.addEventListener('input', () => this.applyFilters());
-       }
-
+       if(searchInput) { searchInput.addEventListener('input', () => this.applyFilters()); }
        const rowsSelect = document.getElementById('rows-per-page');
        if(rowsSelect) {
            rowsSelect.addEventListener('change', (e) => {
-               this.rowsPerPage=parseInt(e.target.value);
-               this.currentPage=1;
-               this.renderTable();
+               this.rowsPerPage=parseInt(e.target.value); this.currentPage=1; this.renderTable();
            });
        }
-
        const stockSearch = document.getElementById('stock-search-input');
-       if(stockSearch) {
-           stockSearch.addEventListener('input', () => this.renderStock());
-       }
+       if(stockSearch) { stockSearch.addEventListener('input', () => this.renderStock()); }
     }
   };
 
