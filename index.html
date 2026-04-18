@@ -902,12 +902,13 @@
             }
             bytes.push(0x0A, 0x0A, 0x0A); // feed 3 lines
 
-            let payload = new Uint8Array(bytes); let chunkSize = 256; 
+            let payload = new Uint8Array(bytes); 
+            let chunkSize = 80; // ลดขนาดก้อนข้อมูลลง เพื่อไม่ให้คอขวด
             for (let i = 0; i < payload.length; i += chunkSize) {
                 let chunk = payload.slice(i, i + chunkSize);
                 if (printCharacteristic.properties.writeWithoutResponse) await printCharacteristic.writeValueWithoutResponse(chunk);
                 else await printCharacteristic.writeValue(chunk);
-                await new Promise(r => setTimeout(r, 5)); 
+                await new Promise(r => setTimeout(r, 20)); // เพิ่มเวลาพักให้เครื่องย่อยข้อมูล 20ms
             }
             setTimeout(() => { if (device.gatt.connected) device.gatt.disconnect(); Swal.fire('พิมพ์สำเร็จ!', '', 'success'); }, 1000);
 
