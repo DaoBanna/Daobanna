@@ -1234,7 +1234,7 @@
                 }
                 bytes.push(0x0A, 0x0A, 0x0A);
                 let payload = new Uint8Array(bytes); 
-                let chunkSize = 200; // ⚡ ปรับก้อนข้อมูลให้ใหญ่ขึ้นอีกนิด (จาก 100 เป็น 120)
+                let chunkSize = 180; // ⚡ ปรับก้อนข้อมูลให้ใหญ่ขึ้นอีกนิด (จาก 100 เป็น 120)
                 
                 for (let i = 0; i < payload.length; i += chunkSize) {
                     let chunk = payload.slice(i, i + chunkSize);
