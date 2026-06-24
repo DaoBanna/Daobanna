@@ -442,20 +442,39 @@
     <div id="global-dropdown"></div>
     <script>
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ3Z36H2V5mbmVIN_Rj0x4NgM-swfwp2xvOY8IbbTDd_NvZqbssKXXVmuIKXxR0t0/exec'; 
+    
+    // แก้ไขระบบ callAPI ให้ดัก Error ฉลาดขึ้น
     async function callAPI(action, data = null) {
         try {
             const response = await fetch(SCRIPT_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: action, data: data })
+                body: JSON.stringify({ action: action, data: data }),
+                redirect: 'follow'
             });
-            const result = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(`การเชื่อมต่อขัดข้อง (HTTP ${response.status})`);
+            }
+
+            const textData = await response.text();
+            let result;
+            
+            try {
+                result = JSON.parse(textData);
+            } catch (err) {
+                // ดักจับ Error ที่เป็นต้นเหตุของUnexpected token A
+                console.error("Raw response:", textData);
+                throw new Error("ระบบหลังบ้านไม่ได้ตอบกลับเป็น JSON (อาจต้องรัน Deploy เป็น New Deployment ใหม่อีกครั้ง)");
+            }
+
             if (result.error) throw new Error(result.error);
             return result;
         } catch (err) { 
             throw err; 
         }
     }
+    
     const app = {
         data: [], 
         categories: [], 
@@ -546,7 +565,7 @@
                 this.applyFilters(); 
                 this.renderStock();
             }).catch(e => { 
-                Swal.fire('Error', e.message, 'error'); 
+                Swal.fire('เกิดข้อผิดพลาดในการโหลดข้อมูล', e.message, 'error'); 
             });
         },
         populateYearFilters: function() {
@@ -1083,7 +1102,7 @@
                     this.closeMultiModal(); 
                     this.fetchData(); 
                 } else { 
-                    Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกได้', 'error'); 
+                    Swal.fire('เกิดข้อผิดพลาด', res.error || 'ไม่สามารถบันทึกได้', 'error'); 
                 }
             }).catch(err => { 
                 Swal.fire('เกิดข้อผิดพลาด', err.message, 'error'); 
@@ -1234,7 +1253,7 @@
                 }
                 bytes.push(0x0A, 0x0A, 0x0A);
                 let payload = new Uint8Array(bytes); 
-                let chunkSize = 100; // ⚡ ปรับก้อนข้อมูลให้ใหญ่ขึ้นอีกนิด (จาก 100 เป็น 120)
+                let chunkSize = 120; // ปรับข้อมูลให้ส่งเร็วขึ้น
                 
                 for (let i = 0; i < payload.length; i += chunkSize) {
                     let chunk = payload.slice(i, i + chunkSize);
@@ -1243,7 +1262,7 @@
                     } else {
                         await printCharacteristic.writeValue(chunk);
                     }
-                    await new Promise(r => setTimeout(r, 5)); // ⚡ ลดเวลาพักลง (จาก 15 เหลือ 10)
+                    await new Promise(r => setTimeout(r, 10)); // ปรับจูนให้เร็วขึ้น
                 }
                 setTimeout(() => { 
                     if (device.gatt.connected) device.gatt.disconnect(); 
