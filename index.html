@@ -443,14 +443,15 @@
     <script>
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ3Z36H2V5mbmVIN_Rj0x4NgM-swfwp2xvOY8IbbTDd_NvZqbssKXXVmuIKXxR0t0/exec'; 
     
-    // แก้ไขระบบ callAPI ให้ดัก Error ฉลาดขึ้น
+    // โค้ดพระเอกของเรา เปลี่ยนมาใช้ x-www-form-urlencoded
     async function callAPI(action, data = null) {
         try {
+            const formData = new URLSearchParams();
+            formData.append('payload', JSON.stringify({ action: action, data: data }));
+
             const response = await fetch(SCRIPT_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: action, data: data }),
-                redirect: 'follow'
+                body: formData
             });
             
             if (!response.ok) {
@@ -463,9 +464,8 @@
             try {
                 result = JSON.parse(textData);
             } catch (err) {
-                // ดักจับ Error ที่เป็นต้นเหตุของUnexpected token A
                 console.error("Raw response:", textData);
-                throw new Error("ระบบหลังบ้านไม่ได้ตอบกลับเป็น JSON (อาจต้องรัน Deploy เป็น New Deployment ใหม่อีกครั้ง)");
+                throw new Error("ระบบหลังบ้านไม่ได้ตอบกลับเป็น JSON (โปรดตรวจสอบการ Deploy อีกครั้ง)");
             }
 
             if (result.error) throw new Error(result.error);
