@@ -443,15 +443,14 @@
     <script>
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ3Z36H2V5mbmVIN_Rj0x4NgM-swfwp2xvOY8IbbTDd_NvZqbssKXXVmuIKXxR0t0/exec'; 
     
-    // โค้ดพระเอกของเรา เปลี่ยนมาใช้ x-www-form-urlencoded
+    // โค้ดดักจับ Error ที่ฉลาดที่สุด แจ้งเตือนสาเหตุให้ทันที
     async function callAPI(action, data = null) {
         try {
-            const formData = new URLSearchParams();
-            formData.append('payload', JSON.stringify({ action: action, data: data }));
-
             const response = await fetch(SCRIPT_URL, {
                 method: 'POST',
-                body: formData
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: action, data: data }),
+                redirect: 'follow'
             });
             
             if (!response.ok) {
@@ -459,16 +458,25 @@
             }
 
             const textData = await response.text();
-            let result;
             
+            // ดักจับกรณีที่ Google ส่งหน้า Login กลับมาแทน JSON
+            if (textData.trim().startsWith('<')) {
+                throw new Error("ระบบติดหน้า Login ของ Google! กรุณากลับไปตั้งค่า Deploy: 'ผู้มีสิทธิ์เข้าถึง (Who has access)' ให้เป็น 'ทุกคน (Anyone)'");
+            }
+
+            let result;
             try {
                 result = JSON.parse(textData);
             } catch (err) {
                 console.error("Raw response:", textData);
-                throw new Error("ระบบหลังบ้านไม่ได้ตอบกลับเป็น JSON (โปรดตรวจสอบการ Deploy อีกครั้ง)");
+                throw new Error("ข้อมูลตอบกลับไม่ใช่ JSON โปรดตรวจสอบ URL ของ Deploy ใหม่");
             }
 
-            if (result.error) throw new Error(result.error);
+            // ถ้ามี Error กลับมาจากฝั่ง Server 
+            if (result.error) {
+                throw new Error(result.message ? result.message : result.error);
+            }
+            
             return result;
         } catch (err) { 
             throw err; 
