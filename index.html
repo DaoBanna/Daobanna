@@ -440,17 +440,20 @@
         </div>
     </div>
     <div id="global-dropdown"></div>
-    <script>
+<script>
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ3Z36H2V5mbmVIN_Rj0x4NgM-swfwp2xvOY8IbbTDd_NvZqbssKXXVmuIKXxR0t0/exec'; 
     
-    // โค้ดดักจับ Error ที่ฉลาดที่สุด แจ้งเตือนสาเหตุให้ทันที
+    // โค้ดส่งข้อมูลแบบกู้ชีพ (ยัดข้อมูลไปใน URL เพื่อสู้กับระบบตัด POST ของ Google)
     async function callAPI(action, data = null) {
         try {
-            const response = await fetch(SCRIPT_URL, {
-                method: 'POST',
+            // เข้ารหัสข้อมูลส่งไปทาง URL เพื่อป้องกัน Google ตัด POST Body ทิ้งตอนสลับบัญชี
+            const payloadStr = data ? encodeURIComponent(JSON.stringify(data)) : '';
+            const fetchUrl = `${SCRIPT_URL}?action=${action}&payload=${payloadStr}`;
+
+            const response = await fetch(fetchUrl, {
+                method: 'POST', 
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: action, data: data }),
-                redirect: 'follow'
+                body: JSON.stringify({ action: action, data: data }) 
             });
             
             if (!response.ok) {
@@ -459,20 +462,18 @@
 
             const textData = await response.text();
             
-            // ดักจับกรณีที่ Google ส่งหน้า Login กลับมาแทน JSON
+            // ดักจับกรณีที่ Google ส่งหน้า Login กลับมาแทน
             if (textData.trim().startsWith('<')) {
-                throw new Error("ระบบติดหน้า Login ของ Google! กรุณากลับไปตั้งค่า Deploy: 'ผู้มีสิทธิ์เข้าถึง (Who has access)' ให้เป็น 'ทุกคน (Anyone)'");
+                throw new Error("ติดหน้าเว็บของ Google! กรุณาเปิดหน้าเว็บนี้ใน 'โหมดไม่ระบุตัวตน (Incognito)'");
             }
 
             let result;
             try {
                 result = JSON.parse(textData);
             } catch (err) {
-                console.error("Raw response:", textData);
-                throw new Error("ข้อมูลตอบกลับไม่ใช่ JSON โปรดตรวจสอบ URL ของ Deploy ใหม่");
+                throw new Error("ข้อมูลตอบกลับไม่ใช่ JSON");
             }
 
-            // ถ้ามี Error กลับมาจากฝั่ง Server 
             if (result.error) {
                 throw new Error(result.message ? result.message : result.error);
             }
