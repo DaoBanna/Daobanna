@@ -1117,22 +1117,74 @@
                 Swal.fire('เกิดข้อผิดพลาด', err.message, 'error'); 
             });
         },
+        
+        // ============================================
+        // เพิ่มฟังก์ชัน ส่ง API ปริ้นต์ผ่าน Local Server ตรงนี้
+        // ============================================
+        printViaLocalServer: async function(data) {
+            try {
+                Swal.fire({ 
+                    title: 'กำลังส่งข้อมูลไปที่เครื่องปริ้นต์...', 
+                    allowOutsideClick: false, 
+                    didOpen: () => Swal.showLoading() 
+                });
+                
+                // ยิงคำสั่งไปที่โปรแกรม Local Server ที่เราจะสร้างมารับค่า
+                const response = await fetch('/print', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`เชื่อมต่อ Local Server ไม่สำเร็จ (Status: ${response.status})`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    Swal.fire({
+                        title: 'สั่งพิมพ์สำเร็จ!',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    const printModal = document.getElementById('native-print-modal');
+                    if (printModal) printModal.remove();
+                } else {
+                    throw new Error(result.error || 'ระบบ Local Server แจ้งข้อผิดพลาด');
+                }
+            } catch (err) {
+                console.error(err);
+                Swal.fire({
+                    title: 'พริ้นต์ไม่สำเร็จ',
+                    text: 'โปรดตรวจสอบว่าได้เปิดโปรแกรม "Local Server" ในโน๊ตบุ๊คไว้แล้วหรือยัง\n\n' + err.message,
+                    icon: 'error'
+                });
+            }
+        },
+
         showPrintModal: function(data, pdfUrl) {
             let modal = document.getElementById('native-print-modal'); 
             if (modal) modal.remove(); 
             modal = document.createElement('div'); 
             modal.id = 'native-print-modal'; 
             modal.className = 'fixed inset-0 bg-slate-900/80 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity';
+            
+            // แก้ไขปุ่มในหน้าต่าง Print Modal
             modal.innerHTML = `
                 <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 flex flex-col gap-4 transform transition-all scale-100">
                     <h3 class="text-xl font-bold text-center text-slate-800 border-b pb-3 border-slate-100">🧾 จัดการใบเสร็จ</h3>
                     <div id="pdf-btn-container"></div>
+                    
+                    <button onclick="app.printViaLocalServer(app.lastReceiptData)" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-lg shadow-md hover:bg-indigo-700 transition flex justify-center items-center gap-3">
+                        <i class="fa-solid fa-print text-2xl"></i> พิมพ์สลิป (Local Server)
+                    </button>
+                    
                     <button id="btn-print-bt" onclick="app.printWebBluetoothCanvas(app.lastReceiptData)" class="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold text-lg shadow-md hover:bg-blue-700 transition flex justify-center items-center gap-3">
-                        <i class="fa-brands fa-bluetooth text-2xl"></i> พิมพ์ Bluetooth (Android)
+                        <i class="fa-brands fa-bluetooth text-2xl"></i> พิมพ์ Bluetooth (มือถือ)
                     </button>
-                    <button id="btn-print-native" onclick="app.printThermalReceipt(app.lastReceiptData)" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold text-lg shadow-md hover:bg-indigo-700 transition flex justify-center items-center gap-3">
-                        <i class="fa-brands fa-apple text-2xl"></i> พิมพ์หน้าเว็บ (PC/iOS)
-                    </button>
+                    
                     <button onclick="document.getElementById('native-print-modal').remove()" class="w-full py-3 mt-2 bg-slate-100 border-2 border-slate-200 text-slate-500 rounded-2xl font-bold hover:bg-slate-200 transition">ปิดหน้าต่าง</button>
                 </div>
             `;
@@ -1145,6 +1197,7 @@
             modal.classList.remove('hidden');
         },
         printWebBluetoothCanvas: async function(data) {
+            // (คงโค้ด Bluetooth เดิมไว้เผื่อจำเป็นต้องใช้ฉุกเฉินผ่านมือถือ)
             try {
                 if (!navigator.bluetooth) { 
                     alert("เบราว์เซอร์นี้ไม่รองรับการพิมพ์ผ่าน Bluetooth\n\n- หากใช้ PC: ต้องเปิดใช้งาน Bluetooth ในเครื่องและตั้งค่าจับคู่อุปกรณ์\n- หากใช้ มือถือ: ต้องใช้เบราว์เซอร์ Chrome และเปิด GPS ตำแหน่งที่ตั้ง"); 
@@ -1262,7 +1315,7 @@
                 }
                 bytes.push(0x0A, 0x0A, 0x0A);
                 let payload = new Uint8Array(bytes); 
-                let chunkSize = 120; // ปรับข้อมูลให้ส่งเร็วขึ้น
+                let chunkSize = 120; 
                 
                 for (let i = 0; i < payload.length; i += chunkSize) {
                     let chunk = payload.slice(i, i + chunkSize);
@@ -1271,7 +1324,7 @@
                     } else {
                         await printCharacteristic.writeValue(chunk);
                     }
-                    await new Promise(r => setTimeout(r, 10)); // ปรับจูนให้เร็วขึ้น
+                    await new Promise(r => setTimeout(r, 10)); 
                 }
                 setTimeout(() => { 
                     if (device.gatt.connected) device.gatt.disconnect(); 
@@ -1290,34 +1343,6 @@
                 const printModal = document.getElementById('native-print-modal'); 
                 if (printModal) printModal.classList.remove('hidden');
             }
-        },
-        printThermalReceipt: function(data) {
-            const d = new Date(data.date); 
-            const dateStr = d.toLocaleDateString('th-TH') + ' ' + d.toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'});
-            let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>ใบเสร็จรับเงิน</title>
-                <style>
-                    @page { margin: 0; size: 58mm auto; }
-                    body { font-family: 'Sarabun', sans-serif; font-size: 12px; width: 58mm; padding: 5px; margin: 0 auto; color: #000; }
-                    .text-center { text-align: center; } .text-right { text-align: right; } .text-left { text-align: left; }
-                    .bold { font-weight: bold; } .line { border-top: 1px dashed #000; margin: 5px 0; }
-                    table { width: 100%; border-collapse: collapse; font-size: 11px; } th, td { padding: 2px 0; vertical-align: top; }
-                </style>
-            </head><body>
-                <div class="text-center bold" style="font-size:16px;">ร้าน บ้านนาค้าของเก่า</div>
-                <div class="text-center">โทร : 082-447-8795</div><div class="line"></div>
-                <div>เลขที่: ${data.receiptNumber}</div><div>วันที่: ${dateStr}</div><div>ประเภท: ${data.type}</div>
-                <div class="line"></div>
-                <table><tr><th class="text-left" style="width:35%;">สินค้า</th><th class="text-center" style="width:15%;">จำนวน</th><th class="text-right" style="width:25%;">ราคา</th><th class="text-right" style="width:25%;">รวม</th></tr>
-                    ${data.items.map(item => `<tr><td>${item.product}</td><td class="text-center">${item.quantity}</td><td class="text-right">${item.price.toLocaleString()}</td><td class="text-right">${(item.price * item.quantity).toLocaleString()}</td></tr>`).join('')}
-                </table>
-                <div class="line"></div>
-                <table><tr><td class="bold">ยอดรวมทั้งสิ้น</td><td class="text-right bold" style="font-size:14px;">${data.total.toLocaleString()} ฿</td></tr></table>
-                <div class="line"></div><div class="text-center" style="font-size:10px;">ขอบคุณที่ใช้บริการ</div>
-                <script>window.onload = function() { window.print(); }<\/script>
-            </body></html>`;
-            const printWin = window.open('', '_blank', 'width=300,height=500'); 
-            printWin.document.write(html); 
-            printWin.document.close();
         },
         reprintReceipt: function(timestamp, type) {
             const itemsToPrint = this.data.filter(t => t.date === timestamp && t.type === type);
