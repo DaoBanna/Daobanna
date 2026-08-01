@@ -30,7 +30,7 @@
 <body class="bg-slate-50 text-slate-800 font-sarabun antialiased">
     <div id="loader" class="fixed inset-0 flex items-center justify-center bg-[#0f172a]/95 backdrop-blur-md z-[120] transition-opacity duration-500">
         <div class="flex flex-col items-center">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mb-4"></div>
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-50 mb-4"></div>
             <p class="text-indigo-200 font-medium text-sm animate-pulse tracking-wide">กำลังเตรียมระบบ...</p>
         </div>
     </div>
@@ -1193,28 +1193,27 @@
                 return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกข้อมูลให้ครบอย่างน้อย 1 รายการ', 'warning'); 
             }
             
-            const dNum = new Date(); 
-            const yy = dNum.getFullYear().toString().slice(-2); 
-            const MM = String(dNum.getMonth() + 1).padStart(2, '0'); 
-            const dd = String(dNum.getDate()).padStart(2, '0'); 
-            const HH = String(dNum.getHours()).padStart(2, '0'); 
-            const mm = String(dNum.getMinutes()).padStart(2, '0');
-            const receiptNum = "REC" + yy + MM + dd + HH + mm; 
-            
-            let grandTotal = 0; 
-            items.forEach(i => grandTotal += (i.price * i.quantity));
-            
-            this.lastReceiptData = { date: dNum.getTime(), type: type, items: items, total: grandTotal, receiptNumber: receiptNum };
-            
             let loadingText = printRequested ? 'กำลังบันทึกและส่งเข้าคิวพริ้นต์...' : 'กำลังบันทึกข้อมูล...';
             Swal.fire({ title: loadingText, allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
             
+            // [UPDATE] ตอนนี้เรียกใช้คำสั่งนี้มันจะทำงานไวมาก เพราะ Google ไม่ต้องรอสร้าง PDF 
             callAPI('saveTransactionBatch', { date, type, items, printRequested }).then(res => {
                 Swal.close(); 
                 if(res.success) { 
                     Swal.fire({ title: 'สำเร็จ!', text: res.message || 'บันทึกข้อมูลเรียบร้อย', icon: 'success', timer: 1500, showConfirmButton: false });
                     this.closeMultiModal(); 
                     this.fetchData(); 
+
+                    // [NEW] แอบยิงคำสั่งไปให้ Google สร้าง PDF เก็บไว้ใน Drive ทำงานแบบเบื้องหลัง (Background Task)
+                    // หน้าจอหน้าร้านไม่ต้องหมุนติ้วรอ พนักงานกดรับคิวลูกค้าคนต่อไปได้เลย
+                    if (res.receiptData) {
+                        callAPI('generateBackgroundPDF', res.receiptData).then(pdfRes => {
+                            console.log("Background PDF created and saved to drive!");
+                        }).catch(err => {
+                            console.error("PDF Background Error:", err);
+                        });
+                    }
+
                 } else { 
                     Swal.fire('เกิดข้อผิดพลาด', res.error || 'ไม่สามารถบันทึกได้', 'error'); 
                 }
@@ -1461,14 +1460,8 @@
             
             this.lastReceiptData = { date: timestamp, type: type, items: formattedItems, total: grandTotal, receiptNumber: receiptNum };
             
-            Swal.fire({ title: 'กำลังดึงข้อมูล...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
-            
-            callAPI('generateReceiptFromSheet', this.lastReceiptData).then(res => { 
-                Swal.close(); 
-                app.showPrintModal(app.lastReceiptData, res.url); 
-            }).catch(err => { 
-                Swal.fire('เกิดข้อผิดพลาด', err.message, 'error'); 
-            });
+            // [UPDATE] เด้งหน้าต่างพิมพ์ขึ้นมาทันที ไม่ต้องรอให้ Google ปั้น PDF ย้อนหลังอีกต่อไป! 🚀
+            app.showPrintModal(app.lastReceiptData, null); 
         },
         
         openEditModal: function(id) {
