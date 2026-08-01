@@ -38,7 +38,7 @@
     <div id="welcome-screen" class="fixed inset-0 z-[100] bg-animate flex flex-col items-center justify-center text-white transition-opacity duration-700">
         <div class="text-center mb-12 animate-[fadeIn_1s_ease-out]">
             <i class="fa-solid fa-cube text-6xl md:text-7xl text-indigo-400 mb-4 md:mb-6 drop-shadow-[0_0_20px_rgba(129,140,248,0.4)]"></i>
-            <h1 class="text-4xl md:text-6xl font-bold mb-2 md:mb-3 tracking-wider">Stock Pro</h1>
+            <h1 class="text-4xl md:text-6xl font-bold mb-2 md:mb-3 tracking-wider">บ้านนา ค้าของเก่า</h1>
             <p class="text-indigo-200 text-base md:text-xl font-light tracking-wide">Inventory & Receipt System</p>
         </div>
         <div class="flex flex-col sm:flex-row gap-4 w-full max-w-md px-8 animate-[fadeIn_1.5s_ease-out]">
@@ -77,7 +77,6 @@
         </aside>
         
         <div class="flex-1 flex flex-col h-screen overflow-hidden relative">
-            <!-- Header มือถือยึดติดบนสุดเสมอ -->
             <header class="md:hidden h-14 bg-white shadow-sm flex items-center justify-between px-4 z-30 border-b shrink-0">
                 <span class="font-bold text-slate-800 flex items-center gap-2">
                     <i class="fa-solid fa-cube text-indigo-600"></i> Stock Pro
@@ -192,19 +191,29 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- [UPDATE] เพิ่ม UI โชว์กราฟว่าง กรณีเดือนนั้นไม่มีรายการขาย -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="bg-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-sm border border-slate-200 lg:col-span-2">
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="font-bold text-sm md:text-base text-slate-700">แนวโน้มรายได้ - ค่าใช้จ่าย</h3>
                             </div>
-                            <div class="h-64 md:h-72">
-                                <canvas id="chart-trend"></canvas>
+                            <div class="h-64 md:h-72 flex justify-center items-center relative">
+                                <canvas id="chart-trend" class="w-full h-full z-10"></canvas>
+                                <div id="empty-trend" class="hidden absolute text-slate-400 flex flex-col items-center">
+                                    <i class="fa-solid fa-chart-line text-4xl mb-2 opacity-30"></i>
+                                    <span class="text-sm font-medium">ยังไม่มีข้อมูลในเดือนนี้</span>
+                                </div>
                             </div>
                         </div>
                         <div class="bg-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-sm border border-slate-200">
                             <h3 class="font-bold text-sm md:text-base text-slate-700 mb-4">สัดส่วนสินค้าขายดี</h3>
-                            <div class="h-64 flex justify-center relative">
-                                <canvas id="chart-category"></canvas>
+                            <div class="h-64 flex justify-center items-center relative">
+                                <canvas id="chart-category" class="w-full h-full z-10"></canvas>
+                                <div id="empty-cat" class="hidden absolute text-slate-400 flex flex-col items-center">
+                                    <i class="fa-solid fa-chart-pie text-4xl mb-2 opacity-30"></i>
+                                    <span class="text-sm font-medium">ยังไม่มีรายการขาย</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -318,7 +327,7 @@
                     </div>
                     
                     <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <!-- ตารางหน้าซื้อ-ขาย -->
+                        <!-- ตารางหน้าซื้อ-ขาย (Responsive Card แบบกะทัดรัด + รหัสบิล) -->
                         <div>
                             <table class="w-full text-left border-collapse block md:table">
                                 <thead class="hidden md:table-header-group bg-slate-50 text-slate-600 uppercase text-xs tracking-wider">
@@ -475,14 +484,21 @@
                 throw new Error("❌ ขาดการเชื่อมต่ออินเทอร์เน็ต! กรุณาเช็คสัญญาณเน็ตก่อนบันทึกข้อมูลครับ");
             }
 
-            const fetchUrl = `${SCRIPT_URL}?action=${action}`;
+            const method = data ? 'POST' : 'GET';
+            const payloadStr = data ? encodeURIComponent(JSON.stringify(data)) : '';
+            const fetchUrl = method === 'GET' 
+                ? `${SCRIPT_URL}?action=${action}`
+                : `${SCRIPT_URL}?action=${action}&payload=${payloadStr}`;
             
-            const response = await fetch(fetchUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: action, data: data })
-            });
+            const options = { method: method };
+            
+            if (method === 'POST') {
+                options.headers = { 'Content-Type': 'text/plain;charset=utf-8' };
+                options.body = JSON.stringify({ action: action, data: data });
+            }
 
+            const response = await fetch(fetchUrl, options);
+            
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
             }
@@ -806,14 +822,18 @@
             this.renderCharts(filtered);
         },
         
+        // เพิ่มส่วนการเช็กข้อมูลกราฟที่นี่
         renderCharts: function(data) {
             const ctxTrend = document.getElementById('chart-trend').getContext('2d');
+            const emptyTrend = document.getElementById('empty-trend');
             if (this.charts.trend) { 
                 this.charts.trend.destroy(); 
             }
             
             const groupedData = {};
+            let hasTrendData = false;
             data.forEach(t => {
+                hasTrendData = true;
                 const d = new Date(t.date);
                 const isYearView = document.getElementById('dash-month').value === 'all';
                 const key = isYearView 
@@ -825,55 +845,74 @@
                 if (t.type === 'ซื้อ') { groupedData[key].cost += t.total; }
             });
             
-            const sortedKeys = Object.keys(groupedData).sort();
-            const labels = sortedKeys.map(k => { 
-                const parts = k.split('-'); 
-                return parts.length === 3 ? `${parts[2]}/${parts[1]}` : `${parts[1]}/${parts[0]}`; 
-            });
-            
-            this.charts.trend = new Chart(ctxTrend, {
-                type: 'bar',
-                data: { 
-                    labels: labels, 
-                    datasets: [ 
-                        { label: 'รายได้', data: sortedKeys.map(k => groupedData[k].sales), backgroundColor: '#4f46e5', borderRadius: 4 }, 
-                        { label: 'รายจ่าย', data: sortedKeys.map(k => groupedData[k].cost), backgroundColor: '#f43f5e', borderRadius: 4 } 
-                    ] 
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    interaction: { mode: 'index', intersect: false }, 
-                    plugins: { legend: { position: 'top', align: 'end' } }, 
-                    scales: { x: { grid: { display: false } }, y: { grid: { borderDash: [5, 5] }, beginAtZero: true } } 
-                }
-            });
+            if (!hasTrendData) {
+                document.getElementById('chart-trend').style.display = 'none';
+                if(emptyTrend) emptyTrend.classList.remove('hidden');
+            } else {
+                document.getElementById('chart-trend').style.display = 'block';
+                if(emptyTrend) emptyTrend.classList.add('hidden');
+                
+                const sortedKeys = Object.keys(groupedData).sort();
+                const labels = sortedKeys.map(k => { 
+                    const parts = k.split('-'); 
+                    return parts.length === 3 ? `${parts[2]}/${parts[1]}` : `${parts[1]}/${parts[0]}`; 
+                });
+                
+                this.charts.trend = new Chart(ctxTrend, {
+                    type: 'bar',
+                    data: { 
+                        labels: labels, 
+                        datasets: [ 
+                            { label: 'รายได้', data: sortedKeys.map(k => groupedData[k].sales), backgroundColor: '#4f46e5', borderRadius: 4 }, 
+                            { label: 'รายจ่าย', data: sortedKeys.map(k => groupedData[k].cost), backgroundColor: '#f43f5e', borderRadius: 4 } 
+                        ] 
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        interaction: { mode: 'index', intersect: false }, 
+                        plugins: { legend: { position: 'top', align: 'end' } }, 
+                        scales: { x: { grid: { display: false } }, y: { grid: { borderDash: [5, 5] }, beginAtZero: true } } 
+                    }
+                });
+            }
             
             const ctxCat = document.getElementById('chart-category').getContext('2d');
+            const emptyCat = document.getElementById('empty-cat');
             if (this.charts.cat) { 
                 this.charts.cat.destroy(); 
             }
             
             const productSales = {}; 
+            let hasCatData = false;
             data.filter(t => t.type === 'ขาย').forEach(t => { 
                 productSales[t.product] = (productSales[t.product] || 0) + t.total; 
+                hasCatData = true;
             });
             
-            const topProducts = Object.entries(productSales).sort((a,b) => b[1] - a[1]).slice(0, 5);
-            
-            this.charts.cat = new Chart(ctxCat, {
-                type: 'doughnut', 
-                data: { 
-                    labels: topProducts.map(p => p[0]), 
-                    datasets: [{ data: topProducts.map(p => p[1]), backgroundColor: ['#4f46e5', '#f43f5e', '#0ea5e9', '#8b5cf6', '#10b981'], borderWidth: 0 }] 
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    cutout: '70%', 
-                    plugins: { legend: { position: 'right' } } 
-                }
-            });
+            if (!hasCatData) {
+                document.getElementById('chart-category').style.display = 'none';
+                if(emptyCat) emptyCat.classList.remove('hidden');
+            } else {
+                document.getElementById('chart-category').style.display = 'block';
+                if(emptyCat) emptyCat.classList.add('hidden');
+                
+                const topProducts = Object.entries(productSales).sort((a,b) => b[1] - a[1]).slice(0, 5);
+                
+                this.charts.cat = new Chart(ctxCat, {
+                    type: 'doughnut', 
+                    data: { 
+                        labels: topProducts.map(p => p[0]), 
+                        datasets: [{ data: topProducts.map(p => p[1]), backgroundColor: ['#4f46e5', '#f43f5e', '#0ea5e9', '#8b5cf6', '#10b981'], borderWidth: 0 }] 
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        cutout: '70%', 
+                        plugins: { legend: { position: 'right' } } 
+                    }
+                });
+            }
         },
         
         filterType: function(type) {
@@ -974,6 +1013,7 @@
             this.renderTable();
         },
         
+        // นี่คือส่วนตารางของหน้ารายการซื้อ-ขายที่ต้องแก้ให้ตรงกัน
         renderTable: function() {
             const tbody = document.getElementById('table-transactions'); 
             if(!tbody) return; 
