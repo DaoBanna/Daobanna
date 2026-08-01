@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>Inventory Pro 2025</title>
+    
+    <link rel="icon" href="data:image/x-icon;base64,">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -24,10 +26,9 @@
         @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         .bg-animate { background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #1e3a8a); background-size: 400% 400%; animation: gradientBG 10s ease infinite; }
         .modal-input { font-size: 16px !important; padding: 0.4rem 0.6rem !important; }
-        @media (max-width: 640px) { .mobile-scroll-hint { position: relative; } .mobile-scroll-hint::after { content: 'เลื่อนขวาเพื่อดูเพิ่ม ➜'; position: absolute; right: 0; top: -20px; font-size: 10px; color: #94a3b8; font-weight: bold; } }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sarabun antialiased">
+<body class="bg-slate-50 text-slate-800 font-sarabun antialiased relative">
     <div id="loader" class="fixed inset-0 flex items-center justify-center bg-[#0f172a]/95 backdrop-blur-md z-[120] transition-opacity duration-500">
         <div class="flex flex-col items-center">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-50 mb-4"></div>
@@ -49,6 +50,7 @@
             </button>
         </div>
     </div>
+
     <div class="flex h-screen overflow-hidden">
         <aside class="w-64 bg-[#0f172a] text-slate-300 flex-shrink-0 hidden md:flex flex-col shadow-2xl z-20">
             <div class="h-16 flex items-center px-6 bg-[#020617] shadow-md border-b border-slate-800">
@@ -73,20 +75,23 @@
                 </button>
             </div>
         </aside>
+        
         <div class="flex-1 flex flex-col h-screen overflow-hidden relative">
-            <header class="md:hidden h-14 bg-white shadow-sm flex items-center justify-between px-4 z-10 border-b">
+            <!-- Header มือถือยึดติดบนสุดเสมอ -->
+            <header class="md:hidden h-14 bg-white shadow-sm flex items-center justify-between px-4 z-30 border-b shrink-0">
                 <span class="font-bold text-slate-800 flex items-center gap-2">
                     <i class="fa-solid fa-cube text-indigo-600"></i> Stock Pro
                 </span>
-                <div class="flex gap-4">
-                    <button onclick="app.openMultiModal()" class="text-indigo-600">
-                        <i class="fa-solid fa-circle-plus text-2xl"></i>
+                <div class="flex gap-3 items-center">
+                    <button onclick="app.openMultiModal()" class="bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 shadow-md hover:bg-indigo-700 active:scale-95 transition-transform">
+                        <i class="fa-solid fa-plus"></i> เพิ่มรายการ
                     </button>
-                    <button onclick="app.toggleMobileMenu()" class="text-slate-600">
+                    <button onclick="app.toggleMobileMenu()" class="text-slate-600 p-2">
                         <i class="fa-solid fa-bars text-xl"></i>
                     </button>
                 </div>
             </header>
+            
             <div id="mobile-menu" class="fixed inset-0 bg-slate-900/50 z-[115] hidden md:hidden" onclick="app.toggleMobileMenu()">
                 <div class="bg-[#0f172a] w-64 h-full p-6 flex flex-col gap-6" onclick="event.stopPropagation()">
                     <h3 class="text-white font-bold text-xl border-b border-slate-700 pb-3">เมนู</h3>
@@ -203,26 +208,28 @@
                             </div>
                         </div>
                     </div>
+                    
                     <div class="bg-white rounded-xl md:rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                         <div class="px-4 md:px-6 py-3 md:py-4 border-b border-slate-100 flex justify-between items-center">
                             <h3 class="font-bold text-sm md:text-base text-slate-700">รายการล่าสุด (5 รายการ)</h3>
                             <button onclick="app.switchView('transactions')" class="text-xs md:text-sm text-indigo-600 hover:underline">ดูทั้งหมด</button>
                         </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-sm min-w-[500px]">
-                                <thead class="bg-slate-50 text-slate-500 text-[10px] md:text-xs uppercase">
+                        <div>
+                            <table class="w-full text-left text-sm block md:table">
+                                <thead class="hidden md:table-header-group bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
                                     <tr>
-                                        <th class="px-4 md:px-6 py-2 md:py-3 font-bold">วันที่</th>
-                                        <th class="px-4 md:px-6 py-2 md:py-3 font-bold">สินค้า</th>
-                                        <th class="px-4 md:px-6 py-2 md:py-3 font-bold">ประเภท</th>
-                                        <th class="px-4 md:px-6 py-2 md:py-3 font-bold text-right">ยอดรวม</th>
+                                        <th class="px-6 py-3 font-bold">วันที่</th>
+                                        <th class="px-6 py-3 font-bold">สินค้า</th>
+                                        <th class="px-6 py-3 font-bold">ประเภท</th>
+                                        <th class="px-6 py-3 font-bold text-right">ยอดรวม</th>
                                     </tr>
                                 </thead>
-                                <tbody id="dashboard-recent-table" class="divide-y divide-slate-100 text-slate-600"></tbody>
+                                <tbody id="dashboard-recent-table" class="block md:table-row-group divide-y md:divide-slate-100 text-slate-600 p-2 md:p-0"></tbody>
                             </table>
                         </div>
                     </div>
                 </div>
+                
                 <div id="view-transactions" class="view-section hidden space-y-4 md:space-y-6">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-4">
                         <div>
@@ -234,88 +241,101 @@
                             <button onclick="app.filterType('ขาย')" id="tab-sell" class="px-3 md:px-5 py-1.5 md:py-2 rounded-md font-medium transition text-slate-500 hover:bg-slate-50">ขาย</button>
                         </div>
                     </div>
-                    <div class="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-slate-200 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-12 gap-2 md:gap-3 items-end">
-                        <div class="flex flex-col lg:col-span-1">
-                            <label class="text-[9px] md:text-[10px] text-indigo-600 font-bold mb-1">เฉพาะวันเดียว</label>
-                            <input type="date" id="filter-single-date" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-indigo-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full">
+
+                    <!-- ส่วนค้นหาและตัวกรองแบบยุบ/กางได้ -->
+                    <div class="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-slate-200">
+                        <div class="flex gap-2 items-center">
+                            <div class="relative flex-1">
+                                <input type="text" id="search-input" onchange="app.applyFilters()" placeholder="ค้นหาชื่อสินค้า, หมวดหมู่..." class="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none text-xs md:text-sm transition">
+                                <i class="fa-solid fa-search absolute left-3 top-3 text-slate-400 text-xs md:text-sm"></i>
+                            </div>
+                            <button onclick="app.toggleFilters()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-xs md:text-sm font-medium transition flex items-center gap-2 border border-slate-200 shrink-0">
+                                <i class="fa-solid fa-filter"></i> <span class="hidden sm:inline">คัดกรอง</span>
+                                <i id="filter-icon-chevron" class="fa-solid fa-chevron-down transition-transform"></i>
+                            </button>
                         </div>
-                        <div class="flex flex-col lg:col-span-1">
-                            <label class="text-[9px] md:text-[10px] text-slate-500 font-bold mb-1">ตั้งแต่วันที่</label>
-                            <input type="date" id="filter-date-start" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full">
-                        </div>
-                        <div class="flex flex-col lg:col-span-1">
-                            <label class="text-[9px] md:text-[10px] text-slate-500 font-bold mb-1">ถึงวันที่</label>
-                            <input type="date" id="filter-date-end" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full">
-                        </div>
-                        <div class="flex flex-col">
-                            <label class="text-[9px] md:text-[10px] text-slate-500 font-bold mb-1">ปี</label>
-                            <select id="filter-year" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full"></select>
-                        </div>
-                        <div class="flex flex-col">
-                            <label class="text-[9px] md:text-[10px] text-slate-500 font-bold mb-1">เดือน</label>
-                            <select id="filter-month" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full">
-                                <option value="all">ทุกเดือน</option>
-                                <option value="0">ม.ค.</option>
-                                <option value="1">ก.พ.</option>
-                                <option value="2">มี.ค.</option>
-                                <option value="3">เม.ย.</option>
-                                <option value="4">พ.ค.</option>
-                                <option value="5">มิ.ย.</option>
-                                <option value="6">ก.ค.</option>
-                                <option value="7">ส.ค.</option>
-                                <option value="8">ก.ย.</option>
-                                <option value="9">ต.ค.</option>
-                                <option value="10">พ.ย.</option>
-                                <option value="11">ธ.ค.</option>
-                            </select>
-                        </div>
-                        <div class="flex flex-col">
-                            <label class="text-[9px] md:text-[10px] text-slate-500 font-bold mb-1">วันที่</label>
-                            <select id="filter-day" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full"></select>
-                        </div>
-                        <div class="flex flex-col">
-                            <label class="text-[9px] md:text-[10px] text-slate-500 font-bold mb-1">สัปดาห์</label>
-                            <select id="filter-week" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full">
-                                <option value="all">ทุกสัปดาห์</option>
-                                <option value="1">WK 1</option>
-                                <option value="2">WK 2</option>
-                                <option value="3">WK 3</option>
-                                <option value="4">WK 4</option>
-                                <option value="5">WK 5</option>
-                            </select>
-                        </div>
-                        <div class="flex flex-col">
-                            <label class="text-[9px] md:text-[10px] text-slate-500 font-bold mb-1">แสดงผล</label>
-                            <select id="rows-per-page" class="p-1.5 md:p-2 border border-slate-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full">
-                                <option value="15">15 แถว</option>
-                                <option value="30">30 แถว</option>
-                                <option value="50">50 แถว</option>
-                                <option value="100">100 แถว</option>
-                            </select>
-                        </div>
-                        <div class="col-span-2 lg:col-span-3 relative">
-                            <input type="text" id="search-input" placeholder="ค้นหาชื่อ, หมวดหมู่..." class="w-full pl-9 pr-3 py-1.5 md:pl-10 md:pr-4 md:py-2 rounded-md border border-slate-200 bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none text-xs md:text-sm">
-                            <i class="fa-solid fa-search absolute left-3 top-2.5 md:top-3 text-slate-400 text-xs md:text-sm"></i>
+
+                        <div id="filter-container" class="hidden grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 md:gap-3 mt-3 pt-3 border-t border-slate-100">
+                            <div class="flex flex-col col-span-2 md:col-span-1">
+                                <label class="text-[10px] text-indigo-600 font-bold mb-1">เฉพาะวันเดียว</label>
+                                <input type="date" id="filter-single-date" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-indigo-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full">
+                            </div>
+                            <div class="flex flex-col col-span-1">
+                                <label class="text-[10px] text-slate-500 font-bold mb-1">ตั้งแต่วันที่</label>
+                                <input type="date" id="filter-date-start" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full">
+                            </div>
+                            <div class="flex flex-col col-span-1">
+                                <label class="text-[10px] text-slate-500 font-bold mb-1">ถึงวันที่</label>
+                                <input type="date" id="filter-date-end" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full">
+                            </div>
+                            <div class="flex flex-col">
+                                <label class="text-[10px] text-slate-500 font-bold mb-1">ปี</label>
+                                <select id="filter-year" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full"></select>
+                            </div>
+                            <div class="flex flex-col">
+                                <label class="text-[10px] text-slate-500 font-bold mb-1">เดือน</label>
+                                <select id="filter-month" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full">
+                                    <option value="all">ทุกเดือน</option>
+                                    <option value="0">ม.ค.</option>
+                                    <option value="1">ก.พ.</option>
+                                    <option value="2">มี.ค.</option>
+                                    <option value="3">เม.ย.</option>
+                                    <option value="4">พ.ค.</option>
+                                    <option value="5">มิ.ย.</option>
+                                    <option value="6">ก.ค.</option>
+                                    <option value="7">ส.ค.</option>
+                                    <option value="8">ก.ย.</option>
+                                    <option value="9">ต.ค.</option>
+                                    <option value="10">พ.ย.</option>
+                                    <option value="11">ธ.ค.</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col">
+                                <label class="text-[10px] text-slate-500 font-bold mb-1">วันที่</label>
+                                <select id="filter-day" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full"></select>
+                            </div>
+                            <div class="flex flex-col">
+                                <label class="text-[10px] text-slate-500 font-bold mb-1">สัปดาห์</label>
+                                <select id="filter-week" onchange="app.applyFilters()" class="p-1.5 md:p-2 border border-slate-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full">
+                                    <option value="all">ทุกสัปดาห์</option>
+                                    <option value="1">WK 1</option>
+                                    <option value="2">WK 2</option>
+                                    <option value="3">WK 3</option>
+                                    <option value="4">WK 4</option>
+                                    <option value="5">WK 5</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col">
+                                <label class="text-[10px] text-slate-500 font-bold mb-1">แสดงผล</label>
+                                <select id="rows-per-page" class="p-1.5 md:p-2 border border-slate-200 rounded-md text-xs md:text-sm bg-slate-50 outline-none w-full">
+                                    <option value="15">15 แถว</option>
+                                    <option value="30">30 แถว</option>
+                                    <option value="50">50 แถว</option>
+                                    <option value="100">100 แถว</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
+                    
                     <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div class="overflow-x-auto mobile-scroll-hint">
-                            <table class="w-full text-left border-collapse min-w-[700px]">
-                                <thead class="bg-slate-50 text-slate-600 uppercase text-[10px] md:text-xs tracking-wider">
+                        <!-- ตารางหน้าซื้อ-ขาย -->
+                        <div>
+                            <table class="w-full text-left border-collapse block md:table">
+                                <thead class="hidden md:table-header-group bg-slate-50 text-slate-600 uppercase text-xs tracking-wider">
                                     <tr>
-                                        <th class="p-3 md:p-4 font-bold cursor-pointer hover:text-indigo-600" onclick="app.sortData('date')">วันที่ <i class="fa-solid fa-sort ml-1"></i></th>
-                                        <th class="p-3 md:p-4 font-bold cursor-pointer hover:text-indigo-600" onclick="app.sortData('type')">ประเภท <i class="fa-solid fa-sort ml-1"></i></th>
-                                        <th class="p-3 md:p-4 font-bold cursor-pointer hover:text-indigo-600" onclick="app.sortData('product')">สินค้า <i class="fa-solid fa-sort ml-1"></i></th>
-                                        <th class="p-3 md:p-4 font-bold text-right cursor-pointer hover:text-indigo-600" onclick="app.sortData('price')">ราคา <i class="fa-solid fa-sort ml-1"></i></th>
-                                        <th class="p-3 md:p-4 font-bold text-right cursor-pointer hover:text-indigo-600" onclick="app.sortData('quantity')">จำนวน <i class="fa-solid fa-sort ml-1"></i></th>
-                                        <th class="p-3 md:p-4 font-bold text-right cursor-pointer hover:text-indigo-600" onclick="app.sortData('total')">รวม <i class="fa-solid fa-sort ml-1"></i></th>
-                                        <th class="p-3 md:p-4 font-bold text-center">จัดการ</th>
+                                        <th class="p-4 font-bold cursor-pointer hover:text-indigo-600" onclick="app.sortData('date')">วันที่ <i class="fa-solid fa-sort ml-1"></i></th>
+                                        <th class="p-4 font-bold cursor-pointer hover:text-indigo-600" onclick="app.sortData('type')">ประเภท <i class="fa-solid fa-sort ml-1"></i></th>
+                                        <th class="p-4 font-bold cursor-pointer hover:text-indigo-600" onclick="app.sortData('product')">สินค้า <i class="fa-solid fa-sort ml-1"></i></th>
+                                        <th class="p-4 font-bold text-right cursor-pointer hover:text-indigo-600" onclick="app.sortData('price')">ราคา <i class="fa-solid fa-sort ml-1"></i></th>
+                                        <th class="p-4 font-bold text-right cursor-pointer hover:text-indigo-600" onclick="app.sortData('quantity')">จำนวน <i class="fa-solid fa-sort ml-1"></i></th>
+                                        <th class="p-4 font-bold text-right cursor-pointer hover:text-indigo-600" onclick="app.sortData('total')">รวม <i class="fa-solid fa-sort ml-1"></i></th>
+                                        <th class="p-4 font-bold text-center">จัดการ</th>
                                     </tr>
                                 </thead>
-                                <tbody id="table-transactions" class="divide-y divide-slate-100"></tbody>
+                                <tbody id="table-transactions" class="block md:table-row-group bg-slate-50 md:bg-transparent p-2 md:p-0"></tbody>
                             </table>
                         </div>
-                        <div id="pagination" class="p-3 md:p-4 flex justify-between items-center bg-slate-50 border-t border-slate-200 text-[10px] md:text-sm text-slate-500"></div>
+                        <div id="pagination" class="p-3 md:p-4 flex justify-between items-center bg-white border-t border-slate-200 text-[10px] md:text-sm text-slate-500"></div>
                     </div>
                 </div>
                 <div id="view-stock" class="view-section hidden space-y-4 md:space-y-6">
@@ -449,23 +469,27 @@
 <script>
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ3Z36H2V5mbmVIN_Rj0x4NgM-swfwp2xvOY8IbbTDd_NvZqbssKXXVmuIKXxR0t0/exec'; 
     
-    async function callAPI(action, data = null) {
+    async function callAPI(action, data = null, retries = 3) {
         try {
-            const payloadStr = data ? encodeURIComponent(JSON.stringify(data)) : '';
-            const fetchUrl = `${SCRIPT_URL}?action=${action}&payload=${payloadStr}`;
-            const response = await fetch(fetchUrl, {
-                method: 'POST', 
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: action, data: data }) 
-            });
+            if (!navigator.onLine) {
+                throw new Error("❌ ขาดการเชื่อมต่ออินเทอร์เน็ต! กรุณาเช็คสัญญาณเน็ตก่อนบันทึกข้อมูลครับ");
+            }
+
+            const fetchUrl = `${SCRIPT_URL}?action=${action}`;
             
+            const response = await fetch(fetchUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: action, data: data })
+            });
+
             if (!response.ok) {
-                throw new Error(`การเชื่อมต่อขัดข้อง (HTTP ${response.status})`);
+                throw new Error(`HTTP ${response.status}`);
             }
             
             const textData = await response.text();
             if (textData.trim().startsWith('<')) {
-                throw new Error("ติดหน้าเว็บของ Google! กรุณาเปิดหน้าเว็บนี้ใน 'โหมดไม่ระบุตัวตน (Incognito)'");
+                throw new Error("ติดหน้าเว็บของ Google! กรุณาเปิดโหมดไม่ระบุตัวตน");
             }
             
             let result;
@@ -481,6 +505,11 @@
             
             return result;
         } catch (err) { 
+            if (retries > 0) {
+                console.warn(`⚠️ โหลดพลาด (${err.message}) กำลังลองใหม่... เหลือโอกาสอีก ${retries} ครั้ง`);
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                return callAPI(action, data, retries - 1);
+            }
             throw err; 
         }
     }
@@ -498,6 +527,7 @@
         charts: { trend: null, cat: null }, 
         activeInput: null, 
         lastReceiptData: null,
+        isInitialLoad: true,
         
         init: function() {
             setTimeout(() => { 
@@ -561,36 +591,63 @@
         toggleMobileMenu: function() { 
             document.getElementById('mobile-menu').classList.toggle('hidden'); 
         },
+
+        toggleFilters: function() {
+            const container = document.getElementById('filter-container');
+            const icon = document.getElementById('filter-icon-chevron');
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                container.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        },
         
         fetchData: function() {
             callAPI('getInitialData').then(res => {
                 this.data = res.transactions;
-                const pCounts = {}; 
-                const cCounts = {};
-                
-                this.data.forEach(t => { 
-                    if (t.product) pCounts[t.product] = (pCounts[t.product] || 0) + 1; 
-                    if (t.category) cCounts[t.category] = (cCounts[t.category] || 0) + 1; 
-                });
-                
-                this.categories = [...new Set(this.data.map(t => t.category))].filter(String).sort((a, b) => cCounts[b] - cCounts[a]);
-                this.products = [...new Set(this.data.map(t => t.product))].filter(String).sort((a, b) => pCounts[b] - pCounts[a]);
-                
-                this.populateYearFilters(); 
-                this.populateDayFilters();
-                
+                this.processData();
+
+                callAPI('getArchiveData').then(archiveRes => {
+                    if (archiveRes.transactions && archiveRes.transactions.length > 0) {
+                        this.data = this.data.concat(archiveRes.transactions);
+                        this.processData(); 
+                    }
+                }).catch(e => console.log("โหลด Archive ไม่สำเร็จ: ", e));
+
+            }).catch(e => {
+                Swal.fire('เกิดข้อผิดพลาดในการโหลดข้อมูล', e.message, 'error');
+            });
+        },
+
+        processData: function() {
+            const pCounts = {}; 
+            const cCounts = {};
+            
+            this.data.forEach(t => { 
+                if (t.product) pCounts[t.product] = (pCounts[t.product] || 0) + 1; 
+                if (t.category) cCounts[t.category] = (cCounts[t.category] || 0) + 1; 
+            });
+            
+            this.categories = [...new Set(this.data.map(t => t.category))].filter(String).sort((a, b) => cCounts[b] - cCounts[a]);
+            this.products = [...new Set(this.data.map(t => t.product))].filter(String).sort((a, b) => pCounts[b] - pCounts[a]);
+            
+            this.populateYearFilters(); 
+            this.populateDayFilters();
+            
+            if (this.isInitialLoad) {
                 const today = new Date(); 
                 const yEl = document.getElementById('dash-year'); 
                 const mEl = document.getElementById('dash-month');
                 if(yEl) yEl.value = today.getFullYear(); 
                 if(mEl) mEl.value = today.getMonth();
-                
-                this.renderDashboard(); 
-                this.applyFilters(); 
-                this.renderStock();
-            }).catch(e => { 
-                Swal.fire('เกิดข้อผิดพลาดในการโหลดข้อมูล', e.message, 'error'); 
-            });
+                this.isInitialLoad = false;
+            }
+            
+            this.renderDashboard(); 
+            this.applyFilters(); 
+            this.renderStock();
         },
         
         populateYearFilters: function() {
@@ -699,16 +756,51 @@
             }).slice(0, 5);
             
             if(recentItems.length === 0) { 
-                recentTable.innerHTML = `<tr><td colspan="4" class="px-6 py-8 text-center text-slate-400">ยังไม่มีรายการในช่วงนี้</td></tr>`; 
+                recentTable.innerHTML = `<tr class="block md:table-row"><td colspan="4" class="p-6 text-center text-slate-400 block md:table-cell">ยังไม่มีรายการในช่วงนี้</td></tr>`; 
             } else {
-                recentTable.innerHTML = recentItems.map(t => `
-                    <tr class="hover:bg-slate-50 transition border-b border-slate-100 last:border-0">
-                        <td class="px-4 md:px-6 py-3 text-xs md:text-sm">${new Date(t.date).toLocaleDateString('th-TH')}</td>
-                        <td class="px-4 md:px-6 py-3 text-slate-800 font-medium text-xs md:text-sm">${t.product}</td>
-                        <td class="px-4 md:px-6 py-3"><span class="px-2 py-0.5 rounded text-[10px] md:text-xs font-bold ${t.type==='ขาย' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${t.type}</span></td>
-                        <td class="px-4 md:px-6 py-3 text-right font-bold text-slate-600 text-xs md:text-sm">${t.total.toLocaleString()}</td>
+                recentTable.innerHTML = recentItems.map(t => {
+                    const badge = t.type === 'ขาย' 
+                        ? `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold">ขาย</span>` 
+                        : `<span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded text-[10px] font-bold">ซื้อ</span>`;
+                    
+                    const dateObj = new Date(t.date);
+                    const dateStr = dateObj.toLocaleDateString('th-TH');
+                    const timeStr = dateObj.toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'});
+                    const refId = "Ref-" + String(t.date).slice(-4);
+                    
+                    return `
+                    <tr class="block md:table-row bg-white border border-slate-200 md:border-b md:border-slate-100 md:border-x-0 md:border-t-0 rounded-lg md:rounded-none mb-3 shadow-sm hover:bg-slate-50 transition">
+                        <td class="md:hidden p-3 block">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex-1 min-w-0 pr-2">
+                                    <div class="font-bold text-sm text-slate-800 truncate">${t.product}</div>
+                                    <div class="text-[10px] text-slate-400 mb-1 truncate">${t.category}</div>
+                                    <div class="flex items-center gap-1 text-[9px] text-slate-500">
+                                        <i class="fa-regular fa-clock"></i> ${dateStr} ${timeStr} 
+                                    </div>
+                                    <div class="text-[9px] font-bold text-indigo-500 mt-0.5">${refId}</div>
+                                </div>
+                                <div class="flex flex-col items-center justify-center px-2 border-x border-slate-100 min-w-[75px] shrink-0">
+                                    <div class="mb-1">${badge}</div>
+                                    <div class="text-[10px] text-slate-500 whitespace-nowrap">${t.price.toLocaleString()} x ${t.quantity}</div>
+                                    <div class="text-[9px] text-slate-400">${t.unit}</div>
+                                </div>
+                                <div class="flex flex-col items-end justify-center pl-2 min-w-[70px] shrink-0">
+                                    <div class="font-bold text-sm text-indigo-600">${t.total.toLocaleString()} ฿</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="hidden md:table-cell p-3 md:p-4 text-slate-500 text-sm">
+                            ${dateStr} <span class="text-[10px] text-slate-400 block">${timeStr} <b class="text-indigo-400">${refId}</b></span>
+                        </td>
+                        <td class="hidden md:table-cell p-3 md:p-4 font-medium text-slate-700">
+                            ${t.product}
+                            <div class="text-[10px] md:text-xs text-slate-400">${t.category}</div>
+                        </td>
+                        <td class="hidden md:table-cell p-3 md:p-4">${badge}</td>
+                        <td class="hidden md:table-cell p-3 md:p-4 text-right font-bold text-slate-600 text-xs md:text-sm">${t.total.toLocaleString()} ฿</td>
                     </tr>
-                `).join('');
+                `}).join('');
             }
             
             this.renderCharts(filtered);
@@ -891,7 +983,7 @@
             const pageData = this.filteredData.slice(start, start + this.rowsPerPage);
             
             if(pageData.length === 0) { 
-                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">ไม่พบข้อมูล</td></tr>`; 
+                tbody.innerHTML = `<tr class="block md:table-row"><td colspan="7" class="p-8 text-center text-slate-400 block md:table-cell">ไม่พบข้อมูล</td></tr>`; 
                 this.renderPagination(0); 
                 return; 
             }
@@ -901,20 +993,61 @@
                     ? `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold">ขาย</span>` 
                     : `<span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded text-[10px] font-bold">ซื้อ</span>`;
                 
+                const dateObj = new Date(t.date);
+                const dateStr = dateObj.toLocaleDateString('th-TH');
+                const timeStr = dateObj.toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'});
+                const refId = "Ref-" + String(t.date).slice(-4);
+                
                 const tr = document.createElement('tr'); 
-                tr.className = "hover:bg-slate-50 border-b border-slate-100 transition text-xs md:text-sm whitespace-nowrap md:whitespace-normal";
+                tr.className = "block md:table-row bg-white border border-slate-200 md:border-b md:border-slate-100 md:border-x-0 md:border-t-0 rounded-lg md:rounded-none mb-3 md:mb-0 shadow-sm md:shadow-none hover:bg-slate-50 transition";
+                
                 tr.innerHTML = `
-                    <td class="p-3 md:p-4 text-slate-500">${new Date(t.date).toLocaleDateString('th-TH')}</td>
-                    <td class="p-3 md:p-4">${badge}</td>
-                    <td class="p-3 md:p-4 font-medium text-slate-700">${t.product}<div class="text-[10px] md:text-xs text-slate-400">${t.category}</div></td>
-                    <td class="p-3 md:p-4 text-right">${t.price.toLocaleString()}</td>
-                    <td class="p-3 md:p-4 text-right">${t.quantity} ${t.unit}</td>
-                    <td class="p-3 md:p-4 text-right font-bold text-slate-700">${t.total.toLocaleString()}</td>
-                    <td class="p-3 md:p-4 text-center">
-                        <button class="text-indigo-500 hover:text-indigo-700 mx-1 p-1.5 md:p-2 bg-indigo-50 rounded-full transition" onclick="app.reprintReceipt(${t.date}, '${t.type}')" title="พิมพ์ใบเสร็จ"><i class="fa-solid fa-print"></i></button>
-                        <button class="text-amber-500 hover:text-amber-700 mx-1 p-1.5 md:p-2 bg-amber-50 rounded-full transition" onclick="app.openEditModal(${t.id})" title="แก้ไข"><i class="fa-solid fa-edit"></i></button>
-                        <button class="text-rose-400 hover:text-rose-600 mx-1 p-1.5 md:p-2 bg-rose-50 rounded-full transition" onclick="app.deleteItem(${t.id})" title="ลบ"><i class="fa-solid fa-trash"></i></button>
-                    </td>`;
+                    <td class="md:hidden p-3 block">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex-1 min-w-0 pr-2">
+                                <div class="font-bold text-sm text-slate-800 truncate">${t.product}</div>
+                                <div class="text-[10px] text-slate-400 mb-1 truncate">${t.category}</div>
+                                <div class="flex items-center gap-1 text-[9px] text-slate-500">
+                                    <i class="fa-regular fa-clock"></i> ${dateStr} ${timeStr} 
+                                </div>
+                                <div class="text-[9px] font-bold text-indigo-500 mt-0.5">${refId}</div>
+                            </div>
+                            
+                            <div class="flex flex-col items-center justify-center px-2 border-x border-slate-100 min-w-[75px] shrink-0">
+                                <div class="mb-1">${badge}</div>
+                                <div class="text-[10px] text-slate-500 whitespace-nowrap">${t.price.toLocaleString()} x ${t.quantity}</div>
+                                <div class="text-[9px] text-slate-400">${t.unit}</div>
+                            </div>
+                            
+                            <div class="flex flex-col items-end justify-center pl-2 min-w-[70px] shrink-0">
+                                <div class="font-bold text-sm text-indigo-600">${t.total.toLocaleString()} ฿</div>
+                            </div>
+                        </div>
+                        
+                        <div class="pt-2 border-t border-slate-100 grid grid-cols-3 gap-2">
+                            <button class="text-indigo-500 py-1.5 bg-indigo-50 rounded-md text-xs font-medium hover:bg-indigo-100 active:scale-95 transition flex items-center justify-center gap-1.5" onclick="app.reprintReceipt(${t.date}, '${t.type}')"><i class="fa-solid fa-print"></i> พิมพ์</button>
+                            <button class="text-amber-500 py-1.5 bg-amber-50 rounded-md text-xs font-medium hover:bg-amber-100 active:scale-95 transition flex items-center justify-center gap-1.5" onclick="app.openEditModal(${t.id})"><i class="fa-solid fa-edit"></i> แก้ไข</button>
+                            <button class="text-rose-500 py-1.5 bg-rose-50 rounded-md text-xs font-medium hover:bg-rose-100 active:scale-95 transition flex items-center justify-center gap-1.5" onclick="app.deleteItem(${t.id})"><i class="fa-solid fa-trash"></i> ลบ</button>
+                        </div>
+                    </td>
+                    
+                    <td class="hidden md:table-cell p-3 md:p-4 text-slate-500 text-sm">
+                        ${dateStr} <span class="text-[10px] text-slate-400 block">${timeStr} <b class="text-indigo-400">${refId}</b></span>
+                    </td>
+                    <td class="hidden md:table-cell p-3 md:p-4">${badge}</td>
+                    <td class="hidden md:table-cell p-3 md:p-4 font-medium text-slate-700">
+                        ${t.product}
+                        <div class="text-[10px] md:text-xs text-slate-400">${t.category}</div>
+                    </td>
+                    <td class="hidden md:table-cell p-3 md:p-4 text-right">${t.price.toLocaleString()}</td>
+                    <td class="hidden md:table-cell p-3 md:p-4 text-right">${t.quantity} ${t.unit}</td>
+                    <td class="hidden md:table-cell p-3 md:p-4 text-right font-bold text-slate-700">${t.total.toLocaleString()}</td>
+                    <td class="hidden md:table-cell p-3 md:p-4 text-center whitespace-nowrap">
+                        <button class="text-indigo-500 hover:text-indigo-700 mx-1 p-1.5 bg-indigo-50 rounded-full transition" onclick="app.reprintReceipt(${t.date}, '${t.type}')" title="พิมพ์ใบเสร็จ"><i class="fa-solid fa-print"></i></button>
+                        <button class="text-amber-500 hover:text-amber-700 mx-1 p-1.5 bg-amber-50 rounded-full transition" onclick="app.openEditModal(${t.id})" title="แก้ไข"><i class="fa-solid fa-edit"></i></button>
+                        <button class="text-rose-400 hover:text-rose-600 mx-1 p-1.5 bg-rose-50 rounded-full transition" onclick="app.deleteItem(${t.id})" title="ลบ"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                `;
                 tbody.appendChild(tr);
             });
             
@@ -1196,7 +1329,6 @@
             let loadingText = printRequested ? 'กำลังบันทึกและส่งเข้าคิวพริ้นต์...' : 'กำลังบันทึกข้อมูล...';
             Swal.fire({ title: loadingText, allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
             
-            // [UPDATE] ตอนนี้เรียกใช้คำสั่งนี้มันจะทำงานไวมาก เพราะ Google ไม่ต้องรอสร้าง PDF 
             callAPI('saveTransactionBatch', { date, type, items, printRequested }).then(res => {
                 Swal.close(); 
                 if(res.success) { 
@@ -1204,8 +1336,6 @@
                     this.closeMultiModal(); 
                     this.fetchData(); 
 
-                    // [NEW] แอบยิงคำสั่งไปให้ Google สร้าง PDF เก็บไว้ใน Drive ทำงานแบบเบื้องหลัง (Background Task)
-                    // หน้าจอหน้าร้านไม่ต้องหมุนติ้วรอ พนักงานกดรับคิวลูกค้าคนต่อไปได้เลย
                     if (res.receiptData) {
                         callAPI('generateBackgroundPDF', res.receiptData).then(pdfRes => {
                             console.log("Background PDF created and saved to drive!");
@@ -1460,7 +1590,6 @@
             
             this.lastReceiptData = { date: timestamp, type: type, items: formattedItems, total: grandTotal, receiptNumber: receiptNum };
             
-            // [UPDATE] เด้งหน้าต่างพิมพ์ขึ้นมาทันที ไม่ต้องรอให้ Google ปั้น PDF ย้อนหลังอีกต่อไป! 🚀
             app.showPrintModal(app.lastReceiptData, null); 
         },
         
@@ -1605,7 +1734,9 @@
         }
     };
     
-    document.addEventListener('DOMContentLoaded', () => app.init());
+    document.addEventListener('DOMContentLoaded', () => {
+        app.init();
+    });
 </script>
 </body>
 </html>
