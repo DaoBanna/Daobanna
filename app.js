@@ -144,14 +144,16 @@ const app = {
     },
     
     fetchData: function() {
+        // 1. โหลดข้อมูล 300 แถวแรกมาแสดงผลทันที (Fast Load)
         callAPI('getInitialData').then(res => {
             this.data = res.transactions;
-            this.processData();
+            this.processData(false); // Render UI ทันที
 
+            // 2. แอบโหลดข้อมูลที่เหลือ (Archive) มาทำ Cache ไว้เบื้องหลัง
             callAPI('getArchiveData').then(archiveRes => {
                 if (archiveRes.transactions && archiveRes.transactions.length > 0) {
                     this.data = this.data.concat(archiveRes.transactions);
-                    this.processData(); 
+                    this.processData(true); // isBackground = true (ไม่บังคับโหลดหน้าใหม่ให้กระตุก)
                 }
             }).catch(e => console.log("โหลด Archive ไม่สำเร็จ: ", e));
 
@@ -160,7 +162,7 @@ const app = {
         });
     },
 
-    processData: function() {
+    processData: function(isBackground = false) {
         const pCounts = {}; 
         const cCounts = {};
         
@@ -177,20 +179,41 @@ const app = {
         
         const yEl = document.getElementById('dash-year'); 
         const mEl = document.getElementById('dash-month');
+        const fyEl = document.getElementById('filter-year'); 
+        const fmEl = document.getElementById('filter-month');
 
-        if (this.isInitialLoad) {
+        if (this.isInitialLoad && !isBackground) {
             const today = new Date(); 
-            if(yEl) yEl.value = today.getFullYear(); 
-            if(mEl) mEl.value = today.getMonth();
+            const curYear = today.getFullYear().toString();
+            const curMonth = today.getMonth().toString();
+
+            // ล็อกตัวกรองหน้า Dashboard เป็นเดือน/ปีปัจจุบัน
+            if(yEl) yEl.value = curYear; 
+            if(mEl) mEl.value = curMonth;
+            
+            // ล็อกตัวกรองหน้า รายการซื้อ-ขาย เป็นเดือน/ปีปัจจุบัน
+            if(fyEl) fyEl.value = curYear;
+            if(fmEl) fmEl.value = curMonth;
+
             this.isInitialLoad = false;
         }
 
+        // ป้องกันค่าหลุดกลับไปเป็นค่าว่าง
         if(yEl && !yEl.value) yEl.value = new Date().getFullYear();
         if(mEl && !mEl.value) mEl.value = new Date().getMonth();
+        if(fyEl && !fyEl.value) fyEl.value = new Date().getFullYear();
+        if(fmEl && !fmEl.value) fmEl.value = new Date().getMonth();
         
-        this.renderDashboard(); 
-        this.applyFilters(); 
-        this.renderStock();
+        if (!isBackground) {
+            // ทำงานเมื่อโหลดครั้งแรก หรือค้นหาปกติ
+            this.renderDashboard(); 
+            this.applyFilters(); 
+            this.renderStock();
+        } else {
+            // ทำงานเบื้องหลัง (Cache) ไม่อัปเดตตารางใหม่เพื่อไม่ให้หน้าจอกระตุก
+            this.renderStock(); // สต็อกอัปเดตแบบเนียนๆ
+            console.log("📦 Background Data Cached Successfully!");
+        }
     },
     
     populateYearFilters: function() {
