@@ -123,9 +123,6 @@ const app = {
         document.getElementById('mobile-menu').classList.toggle('hidden'); 
     },
 
-
-
-    
     toggleFilters: function() {
         const container = document.getElementById('filter-container');
         const icon = document.getElementById('filter-icon-chevron');
@@ -205,7 +202,7 @@ const app = {
         if(mEl && !mEl.value) mEl.value = new Date().getMonth();
         if(fyEl && !fyEl.value) fyEl.value = new Date().getFullYear();
         if(fmEl && !fmEl.value) fmEl.value = new Date().getMonth();
-
+        
         this.renderDashboard(); 
         this.applyFilters(); 
         this.renderStock(); 
