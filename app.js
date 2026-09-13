@@ -533,6 +533,31 @@ const app = {
         
         this.filteredData = temp; 
         this.renderTable();
+        this.renderSummary();
+    },
+
+    renderSummary: function() {
+        const summaryBar = document.getElementById('filter-summary-bar');
+        if(!summaryBar) return;
+
+        let buyTotal = 0, buyQty = 0;
+        let sellTotal = 0, sellQty = 0;
+
+        this.filteredData.forEach(t => {
+            if (t.type === 'ซื้อ') {
+                buyTotal += t.total;
+                buyQty += t.quantity;
+            } else if (t.type === 'ขาย') {
+                sellTotal += t.total;
+                sellQty += t.quantity;
+            }
+        });
+
+        document.getElementById('sum-filtered-count').textContent = this.filteredData.length.toLocaleString() + ' รายการ';
+        document.getElementById('sum-filtered-buy').textContent = buyTotal.toLocaleString(undefined, {minimumFractionDigits: 2}) + ' ฿';
+        document.getElementById('sum-filtered-buy-qty').textContent = 'รวมจำนวน: ' + (Math.round(buyQty * 100) / 100).toLocaleString();
+        document.getElementById('sum-filtered-sell').textContent = sellTotal.toLocaleString(undefined, {minimumFractionDigits: 2}) + ' ฿';
+        document.getElementById('sum-filtered-sell-qty').textContent = 'รวมจำนวน: ' + (Math.round(sellQty * 100) / 100).toLocaleString();
     },
     
     renderTable: function() {
