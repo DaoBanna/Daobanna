@@ -175,14 +175,19 @@ const app = {
         this.populateYearFilters(); 
         this.populateDayFilters();
         
+        const yEl = document.getElementById('dash-year'); 
+        const mEl = document.getElementById('dash-month');
+
         if (this.isInitialLoad) {
             const today = new Date(); 
-            const yEl = document.getElementById('dash-year'); 
-            const mEl = document.getElementById('dash-month');
             if(yEl) yEl.value = today.getFullYear(); 
             if(mEl) mEl.value = today.getMonth();
             this.isInitialLoad = false;
         }
+
+        // ป้องกันค่า dropdown กลายเป็นค่าว่างตอนรีเฟรชข้อมูล Archive
+        if(yEl && !yEl.value) yEl.value = new Date().getFullYear();
+        if(mEl && !mEl.value) mEl.value = new Date().getMonth();
         
         this.renderDashboard(); 
         this.applyFilters(); 
@@ -198,15 +203,28 @@ const app = {
         }
         
         const html = '<option value="all">ทุกปี</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
-        if(document.getElementById('filter-year')) document.getElementById('filter-year').innerHTML = html;
-        if(document.getElementById('dash-year')) document.getElementById('dash-year').innerHTML = html;
+        
+        // เก็บค่าเดิมที่เลือกไว้ก่อนเปลี่ยนตัวเลือกใหม่
+        const fy = document.getElementById('filter-year');
+        const dy = document.getElementById('dash-year');
+        const fyVal = fy ? fy.value : null;
+        const dyVal = dy ? dy.value : null;
+
+        if(fy) { fy.innerHTML = html; if(fyVal) fy.value = fyVal; }
+        if(dy) { dy.innerHTML = html; if(dyVal) dy.value = dyVal; }
     },
     
     populateDayFilters: function() {
         const days = Array.from({length: 31}, (_, i) => i + 1);
         const html = '<option value="all">ทุกวัน</option>' + days.map(d => `<option value="${d}">${d}</option>`).join('');
-        if(document.getElementById('filter-day')) document.getElementById('filter-day').innerHTML = html;
-        if(document.getElementById('dash-day')) document.getElementById('dash-day').innerHTML = html;
+        
+        const fd = document.getElementById('filter-day');
+        const dd = document.getElementById('dash-day');
+        const fdVal = fd ? fd.value : null;
+        const ddVal = dd ? dd.value : null;
+
+        if(fd) { fd.innerHTML = html; if(fdVal) fd.value = fdVal; }
+        if(dd) { dd.innerHTML = html; if(ddVal) dd.value = ddVal; }
     },
     
     switchView: function(viewId) {
@@ -243,10 +261,11 @@ const app = {
         
         if(!yEl || !mEl || !wEl) return;
         
-        const y = yEl.value; 
-        const m = mEl.value; 
-        const dDrop = dDropEl ? dDropEl.value : 'all'; 
-        const w = wEl.value;
+        const today = new Date();
+        const y = yEl.value || today.getFullYear().toString(); 
+        const m = mEl.value || today.getMonth().toString(); 
+        const dDrop = dDropEl && dDropEl.value ? dDropEl.value : 'all'; 
+        const w = wEl && wEl.value ? wEl.value : 'all';
         
         const dSingle = dSingleEl && dSingleEl.value ? new Date(dSingleEl.value).setHours(0,0,0,0) : null;
         const dStart = dStartEl && dStartEl.value ? new Date(dStartEl.value).setHours(0,0,0,0) : null;
@@ -346,94 +365,98 @@ const app = {
     },
     
     renderCharts: function(data) {
-        const ctxTrend = document.getElementById('chart-trend').getContext('2d');
-        const emptyTrend = document.getElementById('empty-trend');
-        if (this.charts.trend) { 
-            this.charts.trend.destroy(); 
-        }
-        
-        const groupedData = {};
-        let hasTrendData = false;
-        data.forEach(t => {
-            hasTrendData = true;
-            const d = new Date(t.date);
-            const isYearView = document.getElementById('dash-month').value === 'all';
-            const key = isYearView 
-                ? `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}` 
-                : `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
+        try {
+            const ctxTrend = document.getElementById('chart-trend').getContext('2d');
+            const emptyTrend = document.getElementById('empty-trend');
+            if (this.charts.trend) { 
+                this.charts.trend.destroy(); 
+            }
             
-            if (!groupedData[key]) groupedData[key] = { sales: 0, cost: 0 };
-            if (t.type === 'ขาย') { groupedData[key].sales += t.total; } 
-            if (t.type === 'ซื้อ') { groupedData[key].cost += t.total; }
-        });
-        
-        if (!hasTrendData) {
-            document.getElementById('chart-trend').style.display = 'none';
-            if(emptyTrend) emptyTrend.classList.remove('hidden');
-        } else {
-            document.getElementById('chart-trend').style.display = 'block';
-            if(emptyTrend) emptyTrend.classList.add('hidden');
-            
-            const sortedKeys = Object.keys(groupedData).sort();
-            const labels = sortedKeys.map(k => { 
-                const parts = k.split('-'); 
-                return parts.length === 3 ? `${parts[2]}/${parts[1]}` : `${parts[1]}/${parts[0]}`; 
+            const groupedData = {};
+            let hasTrendData = false;
+            data.forEach(t => {
+                hasTrendData = true;
+                const d = new Date(t.date);
+                const isYearView = document.getElementById('dash-month').value === 'all';
+                const key = isYearView 
+                    ? `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}` 
+                    : `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
+                
+                if (!groupedData[key]) groupedData[key] = { sales: 0, cost: 0 };
+                if (t.type === 'ขาย') { groupedData[key].sales += t.total; } 
+                if (t.type === 'ซื้อ') { groupedData[key].cost += t.total; }
             });
             
-            this.charts.trend = new Chart(ctxTrend, {
-                type: 'bar',
-                data: { 
-                    labels: labels, 
-                    datasets: [ 
-                        { label: 'รายได้', data: sortedKeys.map(k => groupedData[k].sales), backgroundColor: '#4f46e5', borderRadius: 4 }, 
-                        { label: 'รายจ่าย', data: sortedKeys.map(k => groupedData[k].cost), backgroundColor: '#f43f5e', borderRadius: 4 } 
-                    ] 
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    interaction: { mode: 'index', intersect: false }, 
-                    plugins: { legend: { position: 'top', align: 'end' } }, 
-                    scales: { x: { grid: { display: false } }, y: { grid: { borderDash: [5, 5] }, beginAtZero: true } } 
-                }
-            });
-        }
-        
-        const ctxCat = document.getElementById('chart-category').getContext('2d');
-        const emptyCat = document.getElementById('empty-cat');
-        if (this.charts.cat) { 
-            this.charts.cat.destroy(); 
-        }
-        
-        const productSales = {}; 
-        let hasCatData = false;
-        data.filter(t => t.type === 'ขาย').forEach(t => { 
-            productSales[t.product] = (productSales[t.product] || 0) + t.total; 
-            hasCatData = true;
-        });
-        
-        if (!hasCatData) {
-            document.getElementById('chart-category').style.display = 'none';
-            if(emptyCat) emptyCat.classList.remove('hidden');
-        } else {
-            document.getElementById('chart-category').style.display = 'block';
-            if(emptyCat) emptyCat.classList.add('hidden');
+            if (!hasTrendData) {
+                document.getElementById('chart-trend').style.display = 'none';
+                if(emptyTrend) emptyTrend.classList.remove('hidden');
+            } else {
+                document.getElementById('chart-trend').style.display = 'block';
+                if(emptyTrend) emptyTrend.classList.add('hidden');
+                
+                const sortedKeys = Object.keys(groupedData).sort();
+                const labels = sortedKeys.map(k => { 
+                    const parts = k.split('-'); 
+                    return parts.length === 3 ? `${parts[2]}/${parts[1]}` : `${parts[1]}/${parts[0]}`; 
+                });
+                
+                this.charts.trend = new Chart(ctxTrend, {
+                    type: 'bar',
+                    data: { 
+                        labels: labels, 
+                        datasets: [ 
+                            { label: 'รายได้', data: sortedKeys.map(k => groupedData[k].sales), backgroundColor: '#4f46e5', borderRadius: 4 }, 
+                            { label: 'รายจ่าย', data: sortedKeys.map(k => groupedData[k].cost), backgroundColor: '#f43f5e', borderRadius: 4 } 
+                        ] 
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        interaction: { mode: 'index', intersect: false }, 
+                        plugins: { legend: { position: 'top', align: 'end' } }, 
+                        scales: { x: { grid: { display: false } }, y: { grid: { borderDash: [5, 5] }, beginAtZero: true } } 
+                    }
+                });
+            }
             
-            const topProducts = Object.entries(productSales).sort((a,b) => b[1] - a[1]).slice(0, 5);
+            const ctxCat = document.getElementById('chart-category').getContext('2d');
+            const emptyCat = document.getElementById('empty-cat');
+            if (this.charts.cat) { 
+                this.charts.cat.destroy(); 
+            }
             
-            this.charts.cat = new Chart(ctxCat, {
-                type: 'doughnut', 
-                data: { 
-                    labels: topProducts.map(p => p[0]), 
-                    datasets: [{ data: topProducts.map(p => p[1]), backgroundColor: ['#4f46e5', '#f43f5e', '#0ea5e9', '#8b5cf6', '#10b981'], borderWidth: 0 }] 
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    cutout: '70%', 
-                    plugins: { legend: { position: 'right' } } 
-                }
+            const productSales = {}; 
+            let hasCatData = false;
+            data.filter(t => t.type === 'ขาย').forEach(t => { 
+                productSales[t.product] = (productSales[t.product] || 0) + t.total; 
+                hasCatData = true;
             });
+            
+            if (!hasCatData) {
+                document.getElementById('chart-category').style.display = 'none';
+                if(emptyCat) emptyCat.classList.remove('hidden');
+            } else {
+                document.getElementById('chart-category').style.display = 'block';
+                if(emptyCat) emptyCat.classList.add('hidden');
+                
+                const topProducts = Object.entries(productSales).sort((a,b) => b[1] - a[1]).slice(0, 5);
+                
+                this.charts.cat = new Chart(ctxCat, {
+                    type: 'doughnut', 
+                    data: { 
+                        labels: topProducts.map(p => p[0]), 
+                        datasets: [{ data: topProducts.map(p => p[1]), backgroundColor: ['#4f46e5', '#f43f5e', '#0ea5e9', '#8b5cf6', '#10b981'], borderWidth: 0 }] 
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        cutout: '70%', 
+                        plugins: { legend: { position: 'right' } } 
+                    }
+                });
+            }
+        } catch (error) {
+            console.log("Chart rendering skipped until visible");
         }
     },
     
