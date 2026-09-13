@@ -123,6 +123,8 @@ const app = {
             setTimeout(() => { 
                 welcome.classList.add('hidden'); 
                 this.switchView('dashboard'); 
+                // บังคับ Render ตารางทันทีเมื่อเข้าสู่ระบบ (แก้ปัญหาหน้าจอขาวตอนเปิดใหม่)
+                this.applyFilters();
             }, 700); 
         }
     },
@@ -144,7 +146,7 @@ const app = {
     },
     
     fetchData: function() {
-        // 1. โหลดข้อมูล 300 แถวแรกมาแสดงผลทันที (Fast Load)
+        // 1. โหลดข้อมูล 1000 แถวแรกมาแสดงผลทันที (Fast Load)
         callAPI('getInitialData').then(res => {
             this.data = res.transactions;
             this.processData(false); // Render UI ทันที
@@ -210,8 +212,8 @@ const app = {
             this.applyFilters(); 
             this.renderStock();
         } else {
-            // ทำงานเบื้องหลัง (Cache) ไม่อัปเดตตารางใหม่เพื่อไม่ให้หน้าจอกระตุก
-            this.renderStock(); // สต็อกอัปเดตแบบเนียนๆ
+            // ทำงานเบื้องหลัง (Cache) อัปเดตเงียบๆ
+            this.renderStock(); 
             console.log("📦 Background Data Cached Successfully!");
         }
     },
@@ -265,9 +267,14 @@ const app = {
             activeNav.classList.remove('text-slate-300'); 
         }
         
+        // บังคับ Render ทันทีที่คลิกเปลี่ยนหน้าต่าง ป้องกันข้อมูลค้างหรือหน้าขาว
         if(viewId === 'dashboard') { 
             if(target) target.classList.remove('opacity-0'); 
             this.renderDashboard(); 
+        } else if (viewId === 'transactions') {
+            this.applyFilters();
+        } else if (viewId === 'stock') {
+            this.renderStock();
         }
     },
     
@@ -597,7 +604,32 @@ const app = {
             }
         });
 
-        document.getElementById('sum-filtered-count').textContent = this.filteredData.length.toLocaleString() + ' รายการ';
+        // สร้างข้อความแบบ Dynamic Text ว่ากำลังดูข้อมูลของช่วงไหนอยู่
+        const dSingle = document.getElementById('filter-single-date') ? document.getElementById('filter-single-date').value : null;
+        const dStart = document.getElementById('filter-date-start') ? document.getElementById('filter-date-start').value : null;
+        const dEnd = document.getElementById('filter-date-end') ? document.getElementById('filter-date-end').value : null;
+        const mVal = document.getElementById('filter-month') ? document.getElementById('filter-month').value : 'all';
+        const yVal = document.getElementById('filter-year') ? document.getElementById('filter-year').value : 'all';
+        const dVal = document.getElementById('filter-day') ? document.getElementById('filter-day').value : 'all';
+        
+        const thaiMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+        
+        let contextText = "ข้อมูลทั้งหมด";
+
+        if (dSingle) {
+            const d = new Date(dSingle);
+            contextText = `วันที่ ${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()+543}`;
+        } else if (dStart && dEnd) {
+            contextText = `ช่วงวันที่เลือก`;
+        } else if (dVal !== 'all' && mVal !== 'all' && yVal !== 'all') {
+            contextText = `วันที่ ${dVal} ${thaiMonths[parseInt(mVal)]} ${parseInt(yVal)+543}`;
+        } else if (mVal !== 'all' && yVal !== 'all') {
+            contextText = `เดือน ${thaiMonths[parseInt(mVal)]} ${parseInt(yVal)+543}`;
+        } else if (yVal !== 'all') {
+            contextText = `ปี ${parseInt(yVal)+543}`;
+        }
+
+        document.getElementById('sum-filtered-count').textContent = `${contextText} มี ${this.filteredData.length.toLocaleString()} รายการ`;
         document.getElementById('sum-filtered-buy').textContent = buyTotal.toLocaleString(undefined, {minimumFractionDigits: 2}) + ' ฿';
         document.getElementById('sum-filtered-buy-qty').textContent = (Math.round(buyQty * 100) / 100).toLocaleString();
         document.getElementById('sum-filtered-sell').textContent = sellTotal.toLocaleString(undefined, {minimumFractionDigits: 2}) + ' ฿';
