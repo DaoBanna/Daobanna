@@ -472,6 +472,12 @@
     </div>
     <div id="global-dropdown"></div>
     
-    <script src="app.js?v=1.0.1"></script>
+    <!-- ฝัง Script พัง Cache ของ GitHub บังคับโหลด app.js สดใหม่ตลอดเวลา -->
+    <script>
+        document.write('<script src="app.js?v=' + new Date().getTime() + '"><\/script>');
+    </script>
 </body>
 </html>
+```<Elicitations message="ต้องการให้ส่งไฟล์ที่เหลือต่อเลยไหมครับ?">
+  <Elicitation label="ขอ code.gs และ style.css ด้วย" query="ส่ง code.gs กับ style.css ฉบับแก้ไขเต็มๆ มาให้ด้วย"/>
+</Elicitations>
