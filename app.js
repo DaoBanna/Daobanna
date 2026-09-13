@@ -185,6 +185,7 @@ const app = {
         const fyEl = document.getElementById('filter-year'); 
         const fmEl = document.getElementById('filter-month');
 
+        // เซ็ตค่าเริ่มต้นแค่วันแรกที่โหลด
         if (this.isInitialLoad && !isBackground) {
             const today = new Date(); 
             const curYear = today.getFullYear().toString();
@@ -198,19 +199,16 @@ const app = {
             this.isInitialLoad = false;
         }
 
+        // ป้องกันค่าหลุด
         if(yEl && !yEl.value) yEl.value = new Date().getFullYear();
         if(mEl && !mEl.value) mEl.value = new Date().getMonth();
         if(fyEl && !fyEl.value) fyEl.value = new Date().getFullYear();
         if(fmEl && !fmEl.value) fmEl.value = new Date().getMonth();
         
-        if (!isBackground) {
-            this.renderDashboard(); 
-            this.applyFilters(); 
-            this.renderStock();
-        } else {
-            this.applyFilters(); 
-            this.renderStock(); 
-        }
+        // ⚡ อัปเดต UI ทั้ง 3 หน้าต่างเสมอ ไม่ว่าจะโหลดจาก Cache หรือข้อมูลสด
+        this.renderDashboard(); 
+        this.applyFilters(); 
+        this.renderStock(); 
     },
     
     populateYearFilters: function() {
