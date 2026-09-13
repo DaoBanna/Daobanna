@@ -1,41 +1,31 @@
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ3Z36H2V5mbmVIN_Rj0x4NgM-swfwp2xvOY8IbbTDd_NvZqbssKXXVmuIKXxR0t0/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ3Z36H2V5mbmVIN_Rj0x4NgM-swfwp2xvOY8IbbTDd_NvZqbssKXXVmuIKXxR0t0/exec'; 
     
 async function callAPI(action, data = null, retries = 3) {
     try {
-        if (!navigator.onLine) {
-            throw new Error("❌ ขาดการเชื่อมต่ออินเทอร์เน็ต! กรุณาเช็คสัญญาณเน็ตก่อนบันทึกข้อมูลครับ");
-        }
-
         const method = data ? 'POST' : 'GET';
         
-        // [แก้ 404]: GET ต้องห้อย timestamp ตลอดเวลาเพื่อป้องกัน Chrome จำ Redirect 302 ที่ Token หมดอายุ
-        // POST ไม่ต้องเอาข้อมูลไปต่อท้าย URL ให้ล้นและพัง ให้ยิงตรงๆ
+        // แนบเวลาปัจจุบันระดับมิลลิวินาที ทะลวง Cache ของ Chrome และมือถือ
         const fetchUrl = method === 'GET' 
             ? `${SCRIPT_URL}?action=${action}&_t=${new Date().getTime()}` 
             : SCRIPT_URL;
         
         const options = { 
             method: method,
-            cache: 'no-store', // [แก้ 404]: บังคับไม่ให้เบราว์เซอร์ใช้แคชใดๆ ในการ Fetch
+            cache: 'no-store',
             redirect: 'follow'
         };
         
         if (method === 'POST') {
             options.headers = { 'Content-Type': 'text/plain;charset=utf-8' };
-            // ส่ง action และ data ยัดใส่ body ไปให้หมดตามที่ code.gs รอรับ
             options.body = JSON.stringify({ action: action, data: data });
         }
 
         const response = await fetch(fetchUrl, options);
         
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         const textData = await response.text();
-        if (textData.trim().startsWith('<')) {
-            throw new Error("ติดหน้าเว็บของ Google! กรุณาเปิดโหมดไม่ระบุตัวตน");
-        }
+        if (textData.trim().startsWith('<')) throw new Error("ติดหน้าเว็บของ Google! กรุณาเปิดโหมดไม่ระบุตัวตน");
         
         let result;
         try { 
@@ -44,16 +34,13 @@ async function callAPI(action, data = null, retries = 3) {
             throw new Error("ข้อมูลตอบกลับไม่ใช่ JSON"); 
         }
         
-        if (result.error) {
-            throw new Error(result.message ? result.message : result.error);
-        }
+        if (result.error) throw new Error(result.message ? result.message : result.error);
         
         return result;
     } catch (err) { 
-        // [แก้บันทึกเบิ้ล]: ถ้าเป็นการดึงข้อมูล (GET) ถึงจะยอมให้โหลดซ้ำ ถ้าเป็นบันทึก (POST) พังคือพัง ห้ามแอบส่งซ้ำเด็ดขาด
         const method = data ? 'POST' : 'GET';
+        // ยอมให้โหลดซ้ำเฉพาะตอนดึงข้อมูล (GET) เท่านั้น
         if (retries > 0 && method === 'GET') {
-            console.warn(`⚠️ โหลดพลาด (${err.message}) กำลังลองใหม่... เหลือโอกาสอีก ${retries} ครั้ง`);
             await new Promise(resolve => setTimeout(resolve, 1500));
             return callAPI(action, data, retries - 1);
         }
@@ -78,21 +65,11 @@ const app = {
     isSaving: false,
     
     init: function() {
-        setTimeout(() => { 
-            const l = document.getElementById('loader'); 
-            if (l) { 
-                l.style.opacity = '0'; 
-                setTimeout(() => l.classList.add('hidden'), 500); 
-            } 
-        }, 50);
-        
         this.fetchData(); 
         this.setupListeners();
         
         const multiDate = document.getElementById('multi-date'); 
-        if(multiDate) {
-            multiDate.valueAsDate = new Date(); 
-        }
+        if(multiDate) multiDate.valueAsDate = new Date(); 
         
         document.addEventListener('click', (e) => { 
             const dropdown = document.getElementById('global-dropdown'); 
@@ -121,6 +98,19 @@ const app = {
                 } 
             }); 
         }
+
+        setInterval(() => {
+            if (!this.isSaving) this.fetchData(true);
+        }, 60000);
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && !this.isSaving) {
+                this.fetchData(true);
+            }
+        });
+        window.addEventListener('focus', () => {
+            if (!this.isSaving) this.fetchData(true);
+        });
     },
     
     enterApp: function(action) {
@@ -153,37 +143,37 @@ const app = {
         }
     },
     
-    fetchData: function() {
-        const cachedData = localStorage.getItem('stockPro_cache_data');
-        if (cachedData) {
-            try {
-                this.data = JSON.parse(cachedData);
-                this.processData(false); 
-            } catch (e) {}
+    fetchData: async function(isSilent = false) {
+        if (!isSilent && this.data.length === 0) {
+            const l = document.getElementById('loader');
+            if (l) { l.style.opacity = '1'; l.classList.remove('hidden'); }
         }
 
-        callAPI('getInitialData').then(res => {
-            const hasCache = this.data.length > 0; 
+        try {
+            const res = await callAPI('getInitialData');
             this.data = res.transactions;
-            localStorage.setItem('stockPro_cache_data', JSON.stringify(this.data));
-            this.processData(hasCache); 
+            this.processData();
 
-            callAPI('getArchiveData').then(archiveRes => {
-                if (archiveRes.transactions && archiveRes.transactions.length > 0) {
-                    this.data = this.data.concat(archiveRes.transactions);
-                    localStorage.setItem('stockPro_cache_data', JSON.stringify(this.data)); 
-                    this.processData(true); 
-                }
-            }).catch(e => console.log("โหลด Archive ไม่สำเร็จ: ", e));
-
-        }).catch(e => {
-            if (this.data.length === 0) {
-                Swal.fire('เกิดข้อผิดพลาดในการโหลดข้อมูล', e.message, 'error');
+            if (!isSilent) {
+                const l = document.getElementById('loader');
+                if (l) { l.style.opacity = '0'; setTimeout(() => l.classList.add('hidden'), 500); }
             }
-        });
+
+            const archiveRes = await callAPI('getArchiveData');
+            if (archiveRes.transactions && archiveRes.transactions.length > 0) {
+                this.data = this.data.concat(archiveRes.transactions);
+                this.processData();
+            }
+        } catch (e) {
+            if (!isSilent) {
+                const l = document.getElementById('loader');
+                if (l) { l.style.opacity = '0'; setTimeout(() => l.classList.add('hidden'), 500); }
+                if (this.data.length === 0) Swal.fire('เกิดข้อผิดพลาดในการโหลดข้อมูล', e.message, 'error');
+            }
+        }
     },
 
-    processData: function(isBackground = false) {
+    processData: function() {
         const pCounts = {}; 
         const cCounts = {};
         
@@ -203,7 +193,7 @@ const app = {
         const fyEl = document.getElementById('filter-year'); 
         const fmEl = document.getElementById('filter-month');
 
-        if (this.isInitialLoad && !isBackground) {
+        if (this.isInitialLoad) {
             const today = new Date(); 
             const curYear = today.getFullYear().toString();
             const curMonth = today.getMonth().toString();
@@ -221,23 +211,16 @@ const app = {
         if(fyEl && !fyEl.value) fyEl.value = new Date().getFullYear();
         if(fmEl && !fmEl.value) fmEl.value = new Date().getMonth();
         
-        if (!isBackground) {
-            this.renderDashboard(); 
-            this.applyFilters(); 
-            this.renderStock();
-        } else {
-            this.applyFilters(); 
-            this.renderStock(); 
-        }
+        this.renderDashboard(); 
+        this.applyFilters(); 
+        this.renderStock(); 
     },
     
     populateYearFilters: function() {
         const years = [...new Set(this.data.map(t => new Date(t.date).getFullYear()))].sort((a,b) => b-a);
         const currentYear = new Date().getFullYear();
         
-        if (!years.includes(currentYear)) { 
-            years.unshift(currentYear); 
-        }
+        if (!years.includes(currentYear)) years.unshift(currentYear); 
         
         const html = '<option value="all">ทุกปี</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
         
@@ -1012,7 +995,7 @@ const app = {
             if(res.success) { 
                 Swal.fire({ title: 'สำเร็จ!', text: res.message || 'บันทึกข้อมูลเรียบร้อย', icon: 'success', timer: 1500, showConfirmButton: false });
                 this.closeMultiModal(); 
-                this.fetchData(); 
+                this.fetchData(false);
 
                 if (res.receiptData) {
                     callAPI('generateBackgroundPDF', res.receiptData).then(pdfRes => {
@@ -1307,7 +1290,7 @@ const app = {
             if(res.success) { 
                 Swal.fire('สำเร็จ', 'แก้ไขเรียบร้อย', 'success'); 
                 document.getElementById('modal-edit').classList.add('hidden'); 
-                this.fetchData(); 
+                this.fetchData(false); 
             } else { 
                 Swal.fire('Error', res.message, 'error'); 
             }
@@ -1326,7 +1309,7 @@ const app = {
             if(r.isConfirmed) { 
                 callAPI('deleteTransaction', id).then(res => { 
                     Swal.fire('ลบแล้ว', '', 'success'); 
-                    this.fetchData(); 
+                    this.fetchData(false); 
                 }).catch(err => { 
                     Swal.fire('Error', err.message, 'error'); 
                 }); 
