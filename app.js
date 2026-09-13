@@ -123,7 +123,6 @@ const app = {
             setTimeout(() => { 
                 welcome.classList.add('hidden'); 
                 this.switchView('dashboard'); 
-                // บังคับ Render ตารางทันทีเมื่อเข้าสู่ระบบ (แก้ปัญหาหน้าจอขาวตอนเปิดใหม่)
                 this.applyFilters();
             }, 700); 
         }
@@ -146,21 +145,44 @@ const app = {
     },
     
     fetchData: function() {
-        // 1. โหลดข้อมูล 1000 แถวแรกมาแสดงผลทันที (Fast Load)
-        callAPI('getInitialData').then(res => {
-            this.data = res.transactions;
-            this.processData(false); // Render UI ทันที
+        // 🌟 1. ดึงข้อมูลจาก Cache ในตัวเครื่องเบราว์เซอร์มาก่อน (เพื่อให้เปิด F5 แล้วหน้าไม่ขาว)
+        const cachedData = localStorage.getItem('stockPro_cache_data');
+        if (cachedData) {
+            try {
+                this.data = JSON.parse(cachedData);
+                this.processData(false); // ให้แสดงผลจาก Cache ทันที (0.1 วิ)
+                console.log("⚡ Loaded data from Local Browser Cache");
+            } catch (e) {
+                console.error("Cache parsing error", e);
+            }
+        }
 
-            // 2. แอบโหลดข้อมูลที่เหลือ (Archive) มาทำ Cache ไว้เบื้องหลัง
+        // 🌟 2. วิ่งไปขอข้อมูล 1000 แถวแรก จาก Google Sheets หลังบ้าน
+        callAPI('getInitialData').then(res => {
+            const hasCache = this.data.length > 0; // เช็คว่าตอนแรกมี Cache แสดงอยู่ไหม
+            this.data = res.transactions;
+            
+            // บันทึกข้อมูลที่เพิ่งได้มาทับ Cache เดิมในเครื่อง
+            localStorage.setItem('stockPro_cache_data', JSON.stringify(this.data));
+            
+            // ถ้ามี Cache แสดงอยู่แล้ว ให้แอบอัปเดตเบื้องหลัง (ไม่กระตุก) ถ้ายังไม่มีให้โหลดปกติ
+            this.processData(hasCache); 
+
+            // 🌟 3. แอบโหลดข้อมูลที่เหลือ (Archive) มาเติม
             callAPI('getArchiveData').then(archiveRes => {
                 if (archiveRes.transactions && archiveRes.transactions.length > 0) {
                     this.data = this.data.concat(archiveRes.transactions);
-                    this.processData(true); // isBackground = true (ไม่บังคับโหลดหน้าใหม่ให้กระตุก)
+                    localStorage.setItem('stockPro_cache_data', JSON.stringify(this.data)); // บันทึกฉบับเต็มลง Cache เครื่อง
+                    this.processData(true); // อัปเดตเบื้องหลัง
+                    console.log("📦 Loaded full Archive data and saved to Cache");
                 }
             }).catch(e => console.log("โหลด Archive ไม่สำเร็จ: ", e));
 
         }).catch(e => {
-            Swal.fire('เกิดข้อผิดพลาดในการโหลดข้อมูล', e.message, 'error');
+            // ถ้ารีเฟรชแล้วเน็ตหลุด หรือหลังบ้านพัง แต่เครื่องมี Cache ก็ยังให้ใช้งานต่อได้
+            if (this.data.length === 0) {
+                Swal.fire('เกิดข้อผิดพลาดในการโหลดข้อมูล', e.message, 'error');
+            }
         });
     },
 
@@ -184,16 +206,14 @@ const app = {
         const fyEl = document.getElementById('filter-year'); 
         const fmEl = document.getElementById('filter-month');
 
+        // เซ็ตวันที่เป็นเดือนปัจจุบันแค่เฉพาะการโหลดครั้งแรกสุดเท่านั้น
         if (this.isInitialLoad && !isBackground) {
             const today = new Date(); 
             const curYear = today.getFullYear().toString();
             const curMonth = today.getMonth().toString();
 
-            // ล็อกตัวกรองหน้า Dashboard เป็นเดือน/ปีปัจจุบัน
             if(yEl) yEl.value = curYear; 
             if(mEl) mEl.value = curMonth;
-            
-            // ล็อกตัวกรองหน้า รายการซื้อ-ขาย เป็นเดือน/ปีปัจจุบัน
             if(fyEl) fyEl.value = curYear;
             if(fmEl) fmEl.value = curMonth;
 
@@ -207,14 +227,13 @@ const app = {
         if(fmEl && !fmEl.value) fmEl.value = new Date().getMonth();
         
         if (!isBackground) {
-            // ทำงานเมื่อโหลดครั้งแรก หรือค้นหาปกติ
             this.renderDashboard(); 
             this.applyFilters(); 
             this.renderStock();
         } else {
-            // ทำงานเบื้องหลัง (Cache) อัปเดตเงียบๆ
+            // ถ้ารันอยู่เบื้องหลัง ให้อัปเดต UI เงียบๆ 
+            this.applyFilters(); // ช่วยอัปเดตตัวเลขเผื่อมีรายการมาใหม่
             this.renderStock(); 
-            console.log("📦 Background Data Cached Successfully!");
         }
     },
     
@@ -267,7 +286,6 @@ const app = {
             activeNav.classList.remove('text-slate-300'); 
         }
         
-        // บังคับ Render ทันทีที่คลิกเปลี่ยนหน้าต่าง ป้องกันข้อมูลค้างหรือหน้าขาว
         if(viewId === 'dashboard') { 
             if(target) target.classList.remove('opacity-0'); 
             this.renderDashboard(); 
@@ -604,7 +622,6 @@ const app = {
             }
         });
 
-        // สร้างข้อความแบบ Dynamic Text ว่ากำลังดูข้อมูลของช่วงไหนอยู่
         const dSingle = document.getElementById('filter-single-date') ? document.getElementById('filter-single-date').value : null;
         const dStart = document.getElementById('filter-date-start') ? document.getElementById('filter-date-start').value : null;
         const dEnd = document.getElementById('filter-date-end') ? document.getElementById('filter-date-end').value : null;
