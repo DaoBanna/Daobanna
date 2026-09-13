@@ -151,7 +151,7 @@ const app = {
     
     fetchData: async function(isSilent = false) {
         const cachedData = localStorage.getItem('stockPro_cache_data');
-        if (cachedData) {
+        if (cachedData && !isSilent) {
             try {
                 this.data = JSON.parse(cachedData);
                 this.processData();
@@ -164,30 +164,44 @@ const app = {
         }
 
         try {
-            // โหลดรายการ 1,000 แถวแรก
-            const res = await callAPI('getInitialData');
-            this.data = res.transactions;
-            
-            // 🛑 [แก้ Error QuotaExceeded]: เซฟลง Cache เฉพาะ 1,000 แถวแรกเท่านั้น
-            try {
-                localStorage.setItem('stockPro_cache_data', JSON.stringify(this.data));
-            } catch (cacheErr) {
-                console.warn("ข้ามการเซฟ Cache (หน่วยความจำเต็ม):", cacheErr);
-            }
-            
-            this.processData();
-
-            if (!isSilent) {
-                const l = document.getElementById('loader');
-                if (l) { l.style.opacity = '0'; setTimeout(() => l.classList.add('hidden'), 500); }
-            }
-
-            // โหลด Archive ตัวเต็มมาเก็บใน RAM อย่างเดียว
-            const archiveRes = await callAPI('getArchiveData');
-            if (archiveRes.transactions && archiveRes.transactions.length > 0) {
-                this.data = this.data.concat(archiveRes.transactions);
-                // 🛑 ไม่มีการสั่งเซฟลง localStorage ตรงนี้แล้ว ป้องกัน 5MB เต็ม
+            if (isSilent) {
+                // 🛑 [แก้ปัญหากราฟหด/ตัวกรองพัง]: ถ้ารันเบื้องหลัง ให้โหลดทั้งใหม่และเก่าให้ครบก่อน แล้วค่อยทับทีเดียว
+                const [res, archiveRes] = await Promise.all([
+                    callAPI('getInitialData'),
+                    callAPI('getArchiveData')
+                ]);
+                
+                let newData = res.transactions || [];
+                if (archiveRes && archiveRes.transactions && archiveRes.transactions.length > 0) {
+                    newData = newData.concat(archiveRes.transactions);
+                }
+                
+                this.data = newData; // สลับข้อมูลเก่าเป็นข้อมูลใหม่แบบไร้รอยต่อ
                 this.processData();
+                
+            } else {
+                // โหลดหน้าแรกปกติ
+                const res = await callAPI('getInitialData');
+                this.data = res.transactions;
+                
+                try {
+                    localStorage.setItem('stockPro_cache_data', JSON.stringify(this.data));
+                } catch (cacheErr) {
+                    console.warn("ข้ามการเซฟ Cache (หน่วยความจำเต็ม):", cacheErr);
+                }
+                
+                this.processData();
+
+                if (!isSilent) {
+                    const l = document.getElementById('loader');
+                    if (l) { l.style.opacity = '0'; setTimeout(() => l.classList.add('hidden'), 500); }
+                }
+
+                const archiveRes = await callAPI('getArchiveData');
+                if (archiveRes.transactions && archiveRes.transactions.length > 0) {
+                    this.data = this.data.concat(archiveRes.transactions);
+                    this.processData();
+                }
             }
         } catch (e) {
             console.error("Background Fetch Error: ", e);
@@ -463,7 +477,7 @@ const app = {
                         maintainAspectRatio: false, 
                         interaction: { mode: 'index', intersect: false }, 
                         plugins: { legend: { position: 'top', align: 'end' } }, 
-                        scales: { x: { grid: { display: false } }, y: { grid: { borderDash: [5, 5] }, beginAtZero: true } } 
+                        scales: { x: { grid: { display: false } }, y: { borderDash: [5, 5], beginAtZero: true } } 
                     }
                 });
             }
@@ -1024,7 +1038,7 @@ const app = {
             if(res.success) { 
                 Swal.fire({ title: 'สำเร็จ!', text: res.message || 'บันทึกข้อมูลเรียบร้อย', icon: 'success', timer: 1500, showConfirmButton: false });
                 this.closeMultiModal(); 
-                this.fetchData(false); // เรียกดึงข้อมูลใหม่มาแสดงทันทีหลังจากเซฟเสร็จ
+                this.fetchData(false);
 
                 if (res.receiptData) {
                     callAPI('generateBackgroundPDF', res.receiptData).then(pdfRes => {
