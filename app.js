@@ -9,7 +9,7 @@ async function callAPI(action, data = null, retries = 3) {
         const method = data ? 'POST' : 'GET';
         const payloadStr = data ? encodeURIComponent(JSON.stringify(data)) : '';
         const fetchUrl = method === 'GET' 
-            ? `${SCRIPT_URL}?action=${action}`
+            ? `${SCRIPT_URL}?action=${action}&t=${Date.now()}` 
             : `${SCRIPT_URL}?action=${action}&payload=${payloadStr}`;
         
         const options = { method: method };
@@ -21,14 +21,10 @@ async function callAPI(action, data = null, retries = 3) {
 
         const response = await fetch(fetchUrl, options);
         
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         const textData = await response.text();
-        if (textData.trim().startsWith('<')) {
-            throw new Error("ติดหน้าเว็บของ Google! กรุณาเปิดโหมดไม่ระบุตัวตน");
-        }
+        if (textData.trim().startsWith('<')) throw new Error("ติดหน้าเว็บของ Google! กรุณาเปิดโหมดไม่ระบุตัวตน");
         
         let result;
         try { 
@@ -37,14 +33,11 @@ async function callAPI(action, data = null, retries = 3) {
             throw new Error("ข้อมูลตอบกลับไม่ใช่ JSON"); 
         }
         
-        if (result.error) {
-            throw new Error(result.message ? result.message : result.error);
-        }
+        if (result.error) throw new Error(result.message ? result.message : result.error);
         
         return result;
     } catch (err) { 
-        if (retries > 0) {
-            console.warn(`⚠️ โหลดพลาด (${err.message}) กำลังลองใหม่... เหลือโอกาสอีก ${retries} ครั้ง`);
+        if (retries > 0 && !data) {
             await new Promise(resolve => setTimeout(resolve, 1500));
             return callAPI(action, data, retries - 1);
         }
@@ -81,9 +74,7 @@ const app = {
         this.setupListeners();
         
         const multiDate = document.getElementById('multi-date'); 
-        if(multiDate) {
-            multiDate.valueAsDate = new Date(); 
-        }
+        if(multiDate) multiDate.valueAsDate = new Date(); 
         
         document.addEventListener('click', (e) => { 
             const dropdown = document.getElementById('global-dropdown'); 
@@ -145,41 +136,29 @@ const app = {
     },
     
     fetchData: function() {
-        // 🌟 1. ดึงข้อมูลจาก Cache ในตัวเครื่องเบราว์เซอร์มาก่อน (เพื่อให้เปิด F5 แล้วหน้าไม่ขาว)
         const cachedData = localStorage.getItem('stockPro_cache_data');
         if (cachedData) {
             try {
                 this.data = JSON.parse(cachedData);
-                this.processData(false); // ให้แสดงผลจาก Cache ทันที (0.1 วิ)
-                console.log("⚡ Loaded data from Local Browser Cache");
-            } catch (e) {
-                console.error("Cache parsing error", e);
-            }
+                this.processData(false); 
+            } catch (e) {}
         }
 
-        // 🌟 2. วิ่งไปขอข้อมูล 1000 แถวแรก จาก Google Sheets หลังบ้าน
         callAPI('getInitialData').then(res => {
-            const hasCache = this.data.length > 0; // เช็คว่าตอนแรกมี Cache แสดงอยู่ไหม
+            const hasCache = this.data.length > 0; 
             this.data = res.transactions;
-            
-            // บันทึกข้อมูลที่เพิ่งได้มาทับ Cache เดิมในเครื่อง
             localStorage.setItem('stockPro_cache_data', JSON.stringify(this.data));
-            
-            // ถ้ามี Cache แสดงอยู่แล้ว ให้แอบอัปเดตเบื้องหลัง (ไม่กระตุก) ถ้ายังไม่มีให้โหลดปกติ
             this.processData(hasCache); 
 
-            // 🌟 3. แอบโหลดข้อมูลที่เหลือ (Archive) มาเติม
             callAPI('getArchiveData').then(archiveRes => {
                 if (archiveRes.transactions && archiveRes.transactions.length > 0) {
                     this.data = this.data.concat(archiveRes.transactions);
-                    localStorage.setItem('stockPro_cache_data', JSON.stringify(this.data)); // บันทึกฉบับเต็มลง Cache เครื่อง
-                    this.processData(true); // อัปเดตเบื้องหลัง
-                    console.log("📦 Loaded full Archive data and saved to Cache");
+                    localStorage.setItem('stockPro_cache_data', JSON.stringify(this.data)); 
+                    this.processData(true); 
                 }
-            }).catch(e => console.log("โหลด Archive ไม่สำเร็จ: ", e));
+            }).catch(e => console.error(e));
 
         }).catch(e => {
-            // ถ้ารีเฟรชแล้วเน็ตหลุด หรือหลังบ้านพัง แต่เครื่องมี Cache ก็ยังให้ใช้งานต่อได้
             if (this.data.length === 0) {
                 Swal.fire('เกิดข้อผิดพลาดในการโหลดข้อมูล', e.message, 'error');
             }
@@ -206,7 +185,6 @@ const app = {
         const fyEl = document.getElementById('filter-year'); 
         const fmEl = document.getElementById('filter-month');
 
-        // เซ็ตวันที่เป็นเดือนปัจจุบันแค่เฉพาะการโหลดครั้งแรกสุดเท่านั้น
         if (this.isInitialLoad && !isBackground) {
             const today = new Date(); 
             const curYear = today.getFullYear().toString();
@@ -220,7 +198,6 @@ const app = {
             this.isInitialLoad = false;
         }
 
-        // ป้องกันค่าหลุดกลับไปเป็นค่าว่าง
         if(yEl && !yEl.value) yEl.value = new Date().getFullYear();
         if(mEl && !mEl.value) mEl.value = new Date().getMonth();
         if(fyEl && !fyEl.value) fyEl.value = new Date().getFullYear();
@@ -231,8 +208,7 @@ const app = {
             this.applyFilters(); 
             this.renderStock();
         } else {
-            // ถ้ารันอยู่เบื้องหลัง ให้อัปเดต UI เงียบๆ 
-            this.applyFilters(); // ช่วยอัปเดตตัวเลขเผื่อมีรายการมาใหม่
+            this.applyFilters(); 
             this.renderStock(); 
         }
     },
@@ -241,9 +217,7 @@ const app = {
         const years = [...new Set(this.data.map(t => new Date(t.date).getFullYear()))].sort((a,b) => b-a);
         const currentYear = new Date().getFullYear();
         
-        if (!years.includes(currentYear)) { 
-            years.unshift(currentYear); 
-        }
+        if (!years.includes(currentYear)) years.unshift(currentYear); 
         
         const html = '<option value="all">ทุกปี</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
         
@@ -343,14 +317,10 @@ const app = {
         document.getElementById('kpi-profit').textContent = profit.toLocaleString(undefined, {minimumFractionDigits:2}) + ' ฿';
         
         let profitPercent = 0; 
-        if(totalSales > 0) { 
-            profitPercent = Math.max(0, Math.min(100, (profit / totalSales) * 100)); 
-        }
+        if(totalSales > 0) profitPercent = Math.max(0, Math.min(100, (profit / totalSales) * 100)); 
         
         const profitBar = document.getElementById('profit-bar'); 
-        if(profitBar) { 
-            profitBar.style.width = profitPercent + '%'; 
-        }
+        if(profitBar) profitBar.style.width = profitPercent + '%'; 
         
         const recentTable = document.getElementById('dashboard-recent-table');
         const recentItems = [...filtered].sort((a,b) => { 
@@ -414,9 +384,7 @@ const app = {
         try {
             const ctxTrend = document.getElementById('chart-trend').getContext('2d');
             const emptyTrend = document.getElementById('empty-trend');
-            if (this.charts.trend) { 
-                this.charts.trend.destroy(); 
-            }
+            if (this.charts.trend) this.charts.trend.destroy(); 
             
             const groupedData = {};
             let hasTrendData = false;
@@ -429,8 +397,8 @@ const app = {
                     : `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`;
                 
                 if (!groupedData[key]) groupedData[key] = { sales: 0, cost: 0 };
-                if (t.type === 'ขาย') { groupedData[key].sales += t.total; } 
-                if (t.type === 'ซื้อ') { groupedData[key].cost += t.total; }
+                if (t.type === 'ขาย') groupedData[key].sales += t.total; 
+                if (t.type === 'ซื้อ') groupedData[key].cost += t.total; 
             });
             
             if (!hasTrendData) {
@@ -467,9 +435,7 @@ const app = {
             
             const ctxCat = document.getElementById('chart-category').getContext('2d');
             const emptyCat = document.getElementById('empty-cat');
-            if (this.charts.cat) { 
-                this.charts.cat.destroy(); 
-            }
+            if (this.charts.cat) this.charts.cat.destroy(); 
             
             const productSales = {}; 
             let hasCatData = false;
@@ -501,9 +467,7 @@ const app = {
                     }
                 });
             }
-        } catch (error) {
-            console.log("Chart rendering skipped until visible");
-        }
+        } catch (error) {}
     },
     
     filterType: function(type) {
@@ -515,9 +479,7 @@ const app = {
             if(t === 'buy') btnId = 'tab-buy'; 
             if(t === 'sell') btnId = 'tab-sell'; 
             const btn = document.getElementById(btnId); 
-            if(btn) { 
-                btn.className = "flex-1 md:flex-none px-3 md:px-5 py-1.5 md:py-2 rounded-md font-medium transition text-slate-500 hover:bg-slate-50 whitespace-nowrap"; 
-            } 
+            if(btn) btn.className = "flex-1 md:flex-none px-3 md:px-5 py-1.5 md:py-2 rounded-md font-medium transition text-slate-500 hover:bg-slate-50 whitespace-nowrap"; 
         });
         
         let activeId = 'tab-all'; 
@@ -525,9 +487,7 @@ const app = {
         if(type === 'ขาย') activeId = 'tab-sell';
         
         const activeBtn = document.getElementById(activeId); 
-        if(activeBtn) { 
-            activeBtn.className = "flex-1 md:flex-none px-3 md:px-5 py-1.5 md:py-2 rounded-md font-medium transition bg-slate-800 text-white shadow whitespace-nowrap"; 
-        }
+        if(activeBtn) activeBtn.className = "flex-1 md:flex-none px-3 md:px-5 py-1.5 md:py-2 rounded-md font-medium transition bg-slate-800 text-white shadow whitespace-nowrap"; 
         
         this.applyFilters();
     },
@@ -586,9 +546,7 @@ const app = {
             let vB = b[this.sortCol];
             
             if (this.sortCol === 'date') { 
-                if (vA === vB) { 
-                    return this.sortAsc ? a.id - b.id : b.id - a.id; 
-                } 
+                if (vA === vB) return this.sortAsc ? a.id - b.id : b.id - a.id; 
                 return this.sortAsc ? vA - vB : vB - vA; 
             }
             
@@ -780,9 +738,7 @@ const app = {
         document.getElementById('multi-grand-total').textContent = '0.00';
         
         const dateInput = document.getElementById('multi-date'); 
-        if(dateInput) { 
-            dateInput.valueAsDate = new Date(); 
-        }
+        if(dateInput) dateInput.valueAsDate = new Date(); 
     },
     
     closeMultiModal: function() { 
@@ -818,9 +774,7 @@ const app = {
             if (catVal) {
                 const catData = this.data.filter(t => t.category === catVal);
                 const pCountsLocal = {};
-                catData.forEach(t => {
-                    pCountsLocal[t.product] = (pCountsLocal[t.product] || 0) + 1;
-                });
+                catData.forEach(t => pCountsLocal[t.product] = (pCountsLocal[t.product] || 0) + 1);
                 const productsInCat = [...new Set(catData.map(t => t.product))].sort((a,b) => pCountsLocal[b] - pCountsLocal[a]);
                 items = productsInCat.length > 0 ? productsInCat : this.products;
             } else {
@@ -897,9 +851,7 @@ const app = {
                 if (catInput) catInput.value = history.category || '';
                 
                 const unitInput = row.querySelector('[name="unit"]'); 
-                if (unitInput && !unitInput.value) { 
-                    unitInput.value = history.unit || 'ชิ้น'; 
-                }
+                if (unitInput && !unitInput.value) unitInput.value = history.unit || 'ชิ้น'; 
                 
                 const currentType = document.getElementById('multi-type').value; 
                 const priceInput = row.querySelector('[name="price"]');
@@ -978,9 +930,9 @@ const app = {
         const sell = history.find(t => t.type === 'ขาย');
         const stock = history.reduce((acc, t) => t.type === 'ซื้อ' ? acc + t.quantity : acc - t.quantity, 0);
         
-        if (stockEl) { stockEl.textContent = (Math.round(stock * 100) / 100).toLocaleString(); }
-        if (buyEl) { buyEl.textContent = buy ? buy.price.toLocaleString() : '-'; }
-        if (sellEl) { sellEl.textContent = sell ? sell.price.toLocaleString() : '-'; }
+        if (stockEl) stockEl.textContent = (Math.round(stock * 100) / 100).toLocaleString();
+        if (buyEl) buyEl.textContent = buy ? buy.price.toLocaleString() : '-';
+        if (sellEl) sellEl.textContent = sell ? sell.price.toLocaleString() : '-';
     },
     
     saveMultiItems: function(printRequested = false) {
@@ -1008,12 +960,15 @@ const app = {
         }
         
         this.isSaving = true; 
+        const btns = document.querySelectorAll('#modal-content button');
+        btns.forEach(btn => btn.disabled = true);
 
         let loadingText = printRequested ? 'กำลังบันทึกและส่งเข้าคิวพริ้นต์...' : 'กำลังบันทึกข้อมูล...';
         Swal.fire({ title: loadingText, allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
         
         callAPI('saveTransactionBatch', { date, type, items, printRequested }).then(res => {
             this.isSaving = false; 
+            btns.forEach(btn => btn.disabled = false);
             Swal.close(); 
             if(res.success) { 
                 Swal.fire({ title: 'สำเร็จ!', text: res.message || 'บันทึกข้อมูลเรียบร้อย', icon: 'success', timer: 1500, showConfirmButton: false });
@@ -1021,18 +976,14 @@ const app = {
                 this.fetchData(); 
 
                 if (res.receiptData) {
-                    callAPI('generateBackgroundPDF', res.receiptData).then(pdfRes => {
-                        console.log("Background PDF created and saved to drive!");
-                    }).catch(err => {
-                        console.error("PDF Background Error:", err);
-                    });
+                    callAPI('generateBackgroundPDF', res.receiptData).catch(err => console.error(err));
                 }
-
             } else { 
                 Swal.fire('เกิดข้อผิดพลาด', res.error || 'ไม่สามารถบันทึกได้', 'error'); 
             }
         }).catch(err => { 
             this.isSaving = false; 
+            btns.forEach(btn => btn.disabled = false);
             Swal.fire('เกิดข้อผิดพลาด', err.message, 'error'); 
         });
     },
