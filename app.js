@@ -199,13 +199,11 @@ const app = {
             this.isInitialLoad = false;
         }
 
-        // ป้องกันค่าหลุด
         if(yEl && !yEl.value) yEl.value = new Date().getFullYear();
         if(mEl && !mEl.value) mEl.value = new Date().getMonth();
         if(fyEl && !fyEl.value) fyEl.value = new Date().getFullYear();
         if(fmEl && !fmEl.value) fmEl.value = new Date().getMonth();
-        
-        // ⚡ อัปเดต UI ทั้ง 3 หน้าต่างเสมอ ไม่ว่าจะโหลดจาก Cache หรือข้อมูลสด
+
         this.renderDashboard(); 
         this.applyFilters(); 
         this.renderStock(); 
