@@ -4,7 +4,6 @@ async function callAPI(action, data = null, retries = 3) {
     try {
         const method = data ? 'POST' : 'GET';
         
-        // แนบเวลาปัจจุบันไปกับ GET เพื่อบังคับทะลุ Cache ของ Chrome
         const fetchUrl = method === 'GET' 
             ? `${SCRIPT_URL}?action=${action}&_t=${new Date().getTime()}` 
             : SCRIPT_URL;
@@ -39,7 +38,6 @@ async function callAPI(action, data = null, retries = 3) {
         return result;
     } catch (err) { 
         const method = data ? 'POST' : 'GET';
-        // ยอมให้ Retry เฉพาะ GET (ตอนโหลดตาราง) เท่านั้น
         if (retries > 0 && method === 'GET') {
             await new Promise(resolve => setTimeout(resolve, 1500));
             return callAPI(action, data, retries - 1);
@@ -65,7 +63,6 @@ const app = {
     isSaving: false,
     
     init: function() {
-        // ⚡ [แก้ปัญหาหน้าจอค้าง]: สั่งปิด Loader ทันทีใน 0.3 วิ ให้ผู้ใช้เข้ามากด "เพิ่มรายการ" ได้เลยไม่ต้องรอเน็ต
         setTimeout(() => { 
             const l = document.getElementById('loader'); 
             if (l) { 
@@ -74,7 +71,6 @@ const app = {
             } 
         }, 300);
         
-        // สั่งโหลดข้อมูลเบื้องหลัง
         this.fetchData(); 
         this.setupListeners();
         
@@ -109,12 +105,10 @@ const app = {
             }); 
         }
 
-        // Auto-Sync ดึงข้อมูลเบื้องหลังทุก 1 นาที
         setInterval(() => {
             if (!this.isSaving) this.fetchData(true);
         }, 60000);
 
-        // Auto-Sync ดึงข้อมูลทันทีเมื่อเปิดจอมือถือกลับมา
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible' && !this.isSaving) {
                 this.fetchData(true);
@@ -156,7 +150,6 @@ const app = {
     },
     
     fetchData: async function(isSilent = false) {
-        // 1. ดึง Cache เก่ามาโชว์ก่อนทันที (ให้มีข้อมูลประเมินรายชื่อสินค้า)
         const cachedData = localStorage.getItem('stockPro_cache_data');
         if (cachedData) {
             try {
@@ -165,23 +158,44 @@ const app = {
             } catch (e) {}
         }
 
+        if (!isSilent && this.data.length === 0) {
+            const l = document.getElementById('loader');
+            if (l) { l.style.opacity = '1'; l.classList.remove('hidden'); }
+        }
+
         try {
-            // 2. แอบไปดึงของใหม่มา 1000 รายการแบบเงียบๆ ไม่บล็อกหน้าจอ
+            // โหลดรายการ 1,000 แถวแรก
             const res = await callAPI('getInitialData');
             this.data = res.transactions;
-            localStorage.setItem('stockPro_cache_data', JSON.stringify(this.data)); // บันทึกข้อมูลสดใหม่ทับลงไป
-            this.processData(); // อัปเดตหน้าจอเงียบๆ ทันทีที่ของใหม่มาถึง
+            
+            // 🛑 [แก้ Error QuotaExceeded]: เซฟลง Cache เฉพาะ 1,000 แถวแรกเท่านั้น
+            try {
+                localStorage.setItem('stockPro_cache_data', JSON.stringify(this.data));
+            } catch (cacheErr) {
+                console.warn("ข้ามการเซฟ Cache (หน่วยความจำเต็ม):", cacheErr);
+            }
+            
+            this.processData();
 
-            // 3. แอบโหลด Archive ตัวเต็มมาเก็บไว้
+            if (!isSilent) {
+                const l = document.getElementById('loader');
+                if (l) { l.style.opacity = '0'; setTimeout(() => l.classList.add('hidden'), 500); }
+            }
+
+            // โหลด Archive ตัวเต็มมาเก็บใน RAM อย่างเดียว
             const archiveRes = await callAPI('getArchiveData');
             if (archiveRes.transactions && archiveRes.transactions.length > 0) {
                 this.data = this.data.concat(archiveRes.transactions);
-                localStorage.setItem('stockPro_cache_data', JSON.stringify(this.data));
+                // 🛑 ไม่มีการสั่งเซฟลง localStorage ตรงนี้แล้ว ป้องกัน 5MB เต็ม
                 this.processData();
             }
         } catch (e) {
             console.error("Background Fetch Error: ", e);
-            // ถ้าเน็ตหลุดจริงๆ จะไม่บล็อกหน้าจอ แค่ไม่โชว์ของใหม่
+            if (!isSilent) {
+                const l = document.getElementById('loader');
+                if (l) { l.style.opacity = '0'; setTimeout(() => l.classList.add('hidden'), 500); }
+                if (this.data.length === 0) Swal.fire('เกิดข้อผิดพลาดในการโหลดข้อมูล', e.message, 'error');
+            }
         }
     },
 
@@ -1010,7 +1024,7 @@ const app = {
             if(res.success) { 
                 Swal.fire({ title: 'สำเร็จ!', text: res.message || 'บันทึกข้อมูลเรียบร้อย', icon: 'success', timer: 1500, showConfirmButton: false });
                 this.closeMultiModal(); 
-                this.fetchData(false);
+                this.fetchData(false); // เรียกดึงข้อมูลใหม่มาแสดงทันทีหลังจากเซฟเสร็จ
 
                 if (res.receiptData) {
                     callAPI('generateBackgroundPDF', res.receiptData).then(pdfRes => {
