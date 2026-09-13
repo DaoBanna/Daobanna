@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>Inventory Pro 2025</title>
-    
     <link rel="icon" href="data:image/x-icon;base64,">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -192,7 +191,6 @@
                         </div>
                     </div>
                     
-                    <!-- [UPDATE] เพิ่ม UI โชว์กราฟว่าง กรณีเดือนนั้นไม่มีรายการขาย -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="bg-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-sm border border-slate-200 lg:col-span-2">
                             <div class="flex justify-between items-center mb-4">
@@ -251,7 +249,6 @@
                         </div>
                     </div>
 
-                    <!-- ส่วนค้นหาและตัวกรองแบบยุบ/กางได้ -->
                     <div class="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-slate-200">
                         <div class="flex gap-2 items-center">
                             <div class="relative flex-1">
@@ -327,7 +324,6 @@
                     </div>
                     
                     <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <!-- ตารางหน้าซื้อ-ขาย (Responsive Card แบบกะทัดรัด + รหัสบิล) -->
                         <div>
                             <table class="w-full text-left border-collapse block md:table">
                                 <thead class="hidden md:table-header-group bg-slate-50 text-slate-600 uppercase text-xs tracking-wider">
@@ -363,7 +359,6 @@
         </div>
     </div>
     
-    <!-- Modal: เพิ่มรายการ -->
     <div id="modal-multi" class="fixed inset-0 bg-slate-900/80 hidden z-[110] flex items-end md:items-center justify-center p-0 md:p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white w-full h-[90vh] md:h-[92vh] md:max-w-5xl flex flex-col relative overflow-hidden rounded-t-2xl md:rounded-2xl shadow-2xl" id="modal-content">
             <div class="bg-slate-900 px-3 py-2 md:px-6 md:py-3 flex justify-between items-center flex-shrink-0 gap-2">
@@ -425,7 +420,6 @@
         </div>
     </div>
     
-    <!-- Modal: แก้ไขรายการ -->
     <div id="modal-edit" class="fixed inset-0 bg-slate-900/80 hidden z-[130] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-4 md:p-6">
             <h3 class="font-bold text-base md:text-lg mb-3 md:mb-4 text-slate-800 border-b pb-2">แก้ไขรายการ</h3>
@@ -544,6 +538,7 @@
         activeInput: null, 
         lastReceiptData: null,
         isInitialLoad: true,
+        isSaving: false,
         
         init: function() {
             setTimeout(() => { 
@@ -822,7 +817,6 @@
             this.renderCharts(filtered);
         },
         
-        // เพิ่มส่วนการเช็กข้อมูลกราฟที่นี่
         renderCharts: function(data) {
             const ctxTrend = document.getElementById('chart-trend').getContext('2d');
             const emptyTrend = document.getElementById('empty-trend');
@@ -1013,7 +1007,6 @@
             this.renderTable();
         },
         
-        // นี่คือส่วนตารางของหน้ารายการซื้อ-ขายที่ต้องแก้ให้ตรงกัน
         renderTable: function() {
             const tbody = document.getElementById('table-transactions'); 
             if(!tbody) return; 
@@ -1345,6 +1338,8 @@
         },
         
         saveMultiItems: function(printRequested = false) {
+            if (this.isSaving) return; 
+
             const date = document.getElementById('multi-date').value; 
             const type = document.getElementById('multi-type').value; 
             const items = [];
@@ -1366,10 +1361,13 @@
                 return Swal.fire('ข้อมูลไม่ครบ', 'กรุณากรอกข้อมูลให้ครบอย่างน้อย 1 รายการ', 'warning'); 
             }
             
+            this.isSaving = true; 
+
             let loadingText = printRequested ? 'กำลังบันทึกและส่งเข้าคิวพริ้นต์...' : 'กำลังบันทึกข้อมูล...';
             Swal.fire({ title: loadingText, allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
             
             callAPI('saveTransactionBatch', { date, type, items, printRequested }).then(res => {
+                this.isSaving = false; 
                 Swal.close(); 
                 if(res.success) { 
                     Swal.fire({ title: 'สำเร็จ!', text: res.message || 'บันทึกข้อมูลเรียบร้อย', icon: 'success', timer: 1500, showConfirmButton: false });
@@ -1388,6 +1386,7 @@
                     Swal.fire('เกิดข้อผิดพลาด', res.error || 'ไม่สามารถบันทึกได้', 'error'); 
                 }
             }).catch(err => { 
+                this.isSaving = false; 
                 Swal.fire('เกิดข้อผิดพลาด', err.message, 'error'); 
             });
         },
