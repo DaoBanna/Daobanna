@@ -4,7 +4,7 @@ async function callAPI(action, data = null, retries = 3) {
     try {
         const method = data ? 'POST' : 'GET';
         
-        // แนบเวลาปัจจุบันระดับมิลลิวินาที ทะลวง Cache ของ Chrome และมือถือ
+        // แนบเวลาปัจจุบันไปกับ GET เพื่อบังคับทะลุ Cache ของ Chrome
         const fetchUrl = method === 'GET' 
             ? `${SCRIPT_URL}?action=${action}&_t=${new Date().getTime()}` 
             : SCRIPT_URL;
@@ -39,7 +39,7 @@ async function callAPI(action, data = null, retries = 3) {
         return result;
     } catch (err) { 
         const method = data ? 'POST' : 'GET';
-        // ยอมให้โหลดซ้ำเฉพาะตอนดึงข้อมูล (GET) เท่านั้น
+        // ยอมให้ Retry เฉพาะ GET (ตอนโหลดตาราง) เท่านั้น
         if (retries > 0 && method === 'GET') {
             await new Promise(resolve => setTimeout(resolve, 1500));
             return callAPI(action, data, retries - 1);
@@ -65,6 +65,16 @@ const app = {
     isSaving: false,
     
     init: function() {
+        // ⚡ [แก้ปัญหาหน้าจอค้าง]: สั่งปิด Loader ทันทีใน 0.3 วิ ให้ผู้ใช้เข้ามากด "เพิ่มรายการ" ได้เลยไม่ต้องรอเน็ต
+        setTimeout(() => { 
+            const l = document.getElementById('loader'); 
+            if (l) { 
+                l.style.opacity = '0'; 
+                setTimeout(() => l.classList.add('hidden'), 500); 
+            } 
+        }, 300);
+        
+        // สั่งโหลดข้อมูลเบื้องหลัง
         this.fetchData(); 
         this.setupListeners();
         
@@ -99,10 +109,12 @@ const app = {
             }); 
         }
 
+        // Auto-Sync ดึงข้อมูลเบื้องหลังทุก 1 นาที
         setInterval(() => {
             if (!this.isSaving) this.fetchData(true);
         }, 60000);
 
+        // Auto-Sync ดึงข้อมูลทันทีเมื่อเปิดจอมือถือกลับมา
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible' && !this.isSaving) {
                 this.fetchData(true);
@@ -144,32 +156,32 @@ const app = {
     },
     
     fetchData: async function(isSilent = false) {
-        if (!isSilent && this.data.length === 0) {
-            const l = document.getElementById('loader');
-            if (l) { l.style.opacity = '1'; l.classList.remove('hidden'); }
+        // 1. ดึง Cache เก่ามาโชว์ก่อนทันที (ให้มีข้อมูลประเมินรายชื่อสินค้า)
+        const cachedData = localStorage.getItem('stockPro_cache_data');
+        if (cachedData) {
+            try {
+                this.data = JSON.parse(cachedData);
+                this.processData();
+            } catch (e) {}
         }
 
         try {
+            // 2. แอบไปดึงของใหม่มา 1000 รายการแบบเงียบๆ ไม่บล็อกหน้าจอ
             const res = await callAPI('getInitialData');
             this.data = res.transactions;
-            this.processData();
+            localStorage.setItem('stockPro_cache_data', JSON.stringify(this.data)); // บันทึกข้อมูลสดใหม่ทับลงไป
+            this.processData(); // อัปเดตหน้าจอเงียบๆ ทันทีที่ของใหม่มาถึง
 
-            if (!isSilent) {
-                const l = document.getElementById('loader');
-                if (l) { l.style.opacity = '0'; setTimeout(() => l.classList.add('hidden'), 500); }
-            }
-
+            // 3. แอบโหลด Archive ตัวเต็มมาเก็บไว้
             const archiveRes = await callAPI('getArchiveData');
             if (archiveRes.transactions && archiveRes.transactions.length > 0) {
                 this.data = this.data.concat(archiveRes.transactions);
+                localStorage.setItem('stockPro_cache_data', JSON.stringify(this.data));
                 this.processData();
             }
         } catch (e) {
-            if (!isSilent) {
-                const l = document.getElementById('loader');
-                if (l) { l.style.opacity = '0'; setTimeout(() => l.classList.add('hidden'), 500); }
-                if (this.data.length === 0) Swal.fire('เกิดข้อผิดพลาดในการโหลดข้อมูล', e.message, 'error');
-            }
+            console.error("Background Fetch Error: ", e);
+            // ถ้าเน็ตหลุดจริงๆ จะไม่บล็อกหน้าจอ แค่ไม่โชว์ของใหม่
         }
     },
 
@@ -985,12 +997,15 @@ const app = {
         }
         
         this.isSaving = true; 
+        const btns = document.querySelectorAll('#modal-content button');
+        btns.forEach(btn => btn.disabled = true);
 
         let loadingText = printRequested ? 'กำลังบันทึกและส่งเข้าคิวพริ้นต์...' : 'กำลังบันทึกข้อมูล...';
         Swal.fire({ title: loadingText, allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
         
         callAPI('saveTransactionBatch', { date, type, items, printRequested }).then(res => {
             this.isSaving = false; 
+            btns.forEach(btn => btn.disabled = false);
             Swal.close(); 
             if(res.success) { 
                 Swal.fire({ title: 'สำเร็จ!', text: res.message || 'บันทึกข้อมูลเรียบร้อย', icon: 'success', timer: 1500, showConfirmButton: false });
@@ -1010,6 +1025,7 @@ const app = {
             }
         }).catch(err => { 
             this.isSaving = false; 
+            btns.forEach(btn => btn.disabled = false);
             Swal.fire('เกิดข้อผิดพลาด', err.message, 'error'); 
         });
     },
