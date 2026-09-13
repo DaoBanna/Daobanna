@@ -123,6 +123,9 @@ const app = {
         document.getElementById('mobile-menu').classList.toggle('hidden'); 
     },
 
+
+
+    
     toggleFilters: function() {
         const container = document.getElementById('filter-container');
         const icon = document.getElementById('filter-icon-chevron');
