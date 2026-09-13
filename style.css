@@ -12,3 +12,5 @@ body { font-family: 'Sarabun', sans-serif; -webkit-tap-highlight-color: transpar
 @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 .bg-animate { background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #1e3a8a); background-size: 400% 400%; animation: gradientBG 10s ease infinite; }
 .modal-input { font-size: 16px !important; padding: 0.4rem 0.6rem !important; }
+
+
