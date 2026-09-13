@@ -185,7 +185,6 @@ const app = {
             this.isInitialLoad = false;
         }
 
-        // ป้องกันค่า dropdown กลายเป็นค่าว่างตอนรีเฟรชข้อมูล Archive
         if(yEl && !yEl.value) yEl.value = new Date().getFullYear();
         if(mEl && !mEl.value) mEl.value = new Date().getMonth();
         
@@ -204,7 +203,6 @@ const app = {
         
         const html = '<option value="all">ทุกปี</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
         
-        // เก็บค่าเดิมที่เลือกไว้ก่อนเปลี่ยนตัวเลือกใหม่
         const fy = document.getElementById('filter-year');
         const dy = document.getElementById('dash-year');
         const fyVal = fy ? fy.value : null;
@@ -470,7 +468,7 @@ const app = {
             if(t === 'sell') btnId = 'tab-sell'; 
             const btn = document.getElementById(btnId); 
             if(btn) { 
-                btn.className = "flex-1 md:flex-none px-3 md:px-5 py-2 md:py-2 rounded-md font-medium transition text-slate-500 hover:bg-slate-50"; 
+                btn.className = "flex-1 md:flex-none px-3 md:px-5 py-1.5 md:py-2 rounded-md font-medium transition text-slate-500 hover:bg-slate-50 whitespace-nowrap"; 
             } 
         });
         
@@ -480,7 +478,7 @@ const app = {
         
         const activeBtn = document.getElementById(activeId); 
         if(activeBtn) { 
-            activeBtn.className = "flex-1 md:flex-none px-3 md:px-5 py-2 md:py-2 rounded-md font-medium transition bg-slate-800 text-white shadow"; 
+            activeBtn.className = "flex-1 md:flex-none px-3 md:px-5 py-1.5 md:py-2 rounded-md font-medium transition bg-slate-800 text-white shadow whitespace-nowrap"; 
         }
         
         this.applyFilters();
@@ -578,9 +576,9 @@ const app = {
 
         document.getElementById('sum-filtered-count').textContent = this.filteredData.length.toLocaleString() + ' รายการ';
         document.getElementById('sum-filtered-buy').textContent = buyTotal.toLocaleString(undefined, {minimumFractionDigits: 2}) + ' ฿';
-        document.getElementById('sum-filtered-buy-qty').textContent = 'รวมจำนวน: ' + (Math.round(buyQty * 100) / 100).toLocaleString();
+        document.getElementById('sum-filtered-buy-qty').textContent = (Math.round(buyQty * 100) / 100).toLocaleString();
         document.getElementById('sum-filtered-sell').textContent = sellTotal.toLocaleString(undefined, {minimumFractionDigits: 2}) + ' ฿';
-        document.getElementById('sum-filtered-sell-qty').textContent = 'รวมจำนวน: ' + (Math.round(sellQty * 100) / 100).toLocaleString();
+        document.getElementById('sum-filtered-sell-qty').textContent = (Math.round(sellQty * 100) / 100).toLocaleString();
     },
     
     renderTable: function() {
