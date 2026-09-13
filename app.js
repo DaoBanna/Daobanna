@@ -8,6 +8,7 @@ async function callAPI(action, data = null, retries = 3) {
 
         const method = data ? 'POST' : 'GET';
         const payloadStr = data ? encodeURIComponent(JSON.stringify(data)) : '';
+        // แนบ Date.now() ไปกับ API เพื่อป้องกันเบราว์เซอร์จำข้อมูล JSON เก่า
         const fetchUrl = method === 'GET' 
             ? `${SCRIPT_URL}?action=${action}&t=${Date.now()}` 
             : `${SCRIPT_URL}?action=${action}&payload=${payloadStr}`;
@@ -62,14 +63,6 @@ const app = {
     isSaving: false,
     
     init: function() {
-        setTimeout(() => { 
-            const l = document.getElementById('loader'); 
-            if (l) { 
-                l.style.opacity = '0'; 
-                setTimeout(() => l.classList.add('hidden'), 500); 
-            } 
-        }, 50);
-        
         this.fetchData(); 
         this.setupListeners();
         
@@ -103,6 +96,21 @@ const app = {
                 } 
             }); 
         }
+
+        // ระบบ Auto-Sync: ดึงข้อมูลเบื้องหลังทุก 1 นาที เพื่อให้อัปเดตตลอดเวลา
+        setInterval(() => {
+            if (!this.isSaving) this.fetchData(true);
+        }, 60000);
+
+        // ระบบ Auto-Sync: ดึงข้อมูลทันทีเมื่อสลับแอป หรือเปิดหน้าจอมือถือกลับมา
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && !this.isSaving) {
+                this.fetchData(true);
+            }
+        });
+        window.addEventListener('focus', () => {
+            if (!this.isSaving) this.fetchData(true);
+        });
     },
     
     enterApp: function(action) {
@@ -135,37 +143,40 @@ const app = {
         }
     },
     
-    fetchData: function() {
-        const cachedData = localStorage.getItem('stockPro_cache_data');
-        if (cachedData) {
-            try {
-                this.data = JSON.parse(cachedData);
-                this.processData(false); 
-            } catch (e) {}
+    // ฟังก์ชันดึงข้อมูลแบบใหม่ ลบ Cache เดิมทิ้งหมด และรองรับการดึงแบบเงียบๆ (Silent)
+    fetchData: async function(isSilent = false) {
+        if (!isSilent && this.data.length === 0) {
+            const l = document.getElementById('loader');
+            if (l) { l.style.opacity = '1'; l.classList.remove('hidden'); }
         }
 
-        callAPI('getInitialData').then(res => {
-            const hasCache = this.data.length > 0; 
+        try {
+            // โหลด 1000 รายการแรกมาก่อน
+            const res = await callAPI('getInitialData');
             this.data = res.transactions;
-            localStorage.setItem('stockPro_cache_data', JSON.stringify(this.data));
-            this.processData(hasCache); 
+            this.processData();
 
-            callAPI('getArchiveData').then(archiveRes => {
-                if (archiveRes.transactions && archiveRes.transactions.length > 0) {
-                    this.data = this.data.concat(archiveRes.transactions);
-                    localStorage.setItem('stockPro_cache_data', JSON.stringify(this.data)); 
-                    this.processData(true); 
-                }
-            }).catch(e => console.error(e));
-
-        }).catch(e => {
-            if (this.data.length === 0) {
-                Swal.fire('เกิดข้อผิดพลาดในการโหลดข้อมูล', e.message, 'error');
+            if (!isSilent) {
+                const l = document.getElementById('loader');
+                if (l) { l.style.opacity = '0'; setTimeout(() => l.classList.add('hidden'), 500); }
             }
-        });
+
+            // แอบโหลด Archive ที่เหลือมาเติมให้เต็ม
+            const archiveRes = await callAPI('getArchiveData');
+            if (archiveRes.transactions && archiveRes.transactions.length > 0) {
+                this.data = this.data.concat(archiveRes.transactions);
+                this.processData();
+            }
+        } catch (e) {
+            if (!isSilent) {
+                const l = document.getElementById('loader');
+                if (l) { l.style.opacity = '0'; setTimeout(() => l.classList.add('hidden'), 500); }
+                if (this.data.length === 0) Swal.fire('เกิดข้อผิดพลาดในการโหลดข้อมูล', e.message, 'error');
+            }
+        }
     },
 
-    processData: function(isBackground = false) {
+    processData: function() {
         const pCounts = {}; 
         const cCounts = {};
         
@@ -185,7 +196,7 @@ const app = {
         const fyEl = document.getElementById('filter-year'); 
         const fmEl = document.getElementById('filter-month');
 
-        if (this.isInitialLoad && !isBackground) {
+        if (this.isInitialLoad) {
             const today = new Date(); 
             const curYear = today.getFullYear().toString();
             const curMonth = today.getMonth().toString();
@@ -968,7 +979,7 @@ const app = {
             if(res.success) { 
                 Swal.fire({ title: 'สำเร็จ!', text: res.message || 'บันทึกข้อมูลเรียบร้อย', icon: 'success', timer: 1500, showConfirmButton: false });
                 this.closeMultiModal(); 
-                this.fetchData(); 
+                this.fetchData(false); // เรียกดึงข้อมูลใหม่มาแสดงทันทีหลังจากเซฟเสร็จ
 
                 if (res.receiptData) {
                     callAPI('generateBackgroundPDF', res.receiptData).catch(err => console.error(err));
@@ -1259,7 +1270,7 @@ const app = {
             if(res.success) { 
                 Swal.fire('สำเร็จ', 'แก้ไขเรียบร้อย', 'success'); 
                 document.getElementById('modal-edit').classList.add('hidden'); 
-                this.fetchData(); 
+                this.fetchData(false); 
             } else { 
                 Swal.fire('Error', res.message, 'error'); 
             }
@@ -1278,7 +1289,7 @@ const app = {
             if(r.isConfirmed) { 
                 callAPI('deleteTransaction', id).then(res => { 
                     Swal.fire('ลบแล้ว', '', 'success'); 
-                    this.fetchData(); 
+                    this.fetchData(false); 
                 }).catch(err => { 
                     Swal.fire('Error', err.message, 'error'); 
                 }); 
