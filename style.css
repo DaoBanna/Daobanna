@@ -1,0 +1,14 @@
+body { font-family: 'Sarabun', sans-serif; -webkit-tap-highlight-color: transparent; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+#global-dropdown { position: fixed; background: white; border: 1px solid #e2e8f0; border-radius: 0.5rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); max-height: 250px; overflow-y: auto; z-index: 9999; display: none; animation: fadeIn 0.1s ease-out; font-size: 0.85rem; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+.dropdown-item { padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid #f8fafc; color: #475569; }
+.dropdown-item:hover, .dropdown-item:active { background-color: #f0f9ff; color: #0369a1; font-weight: 500; padding-left: 1.25rem; transition: all 0.2s; }
+.hover-card { transition: all 0.3s ease; }
+.hover-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+@keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+.bg-animate { background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #1e3a8a); background-size: 400% 400%; animation: gradientBG 10s ease infinite; }
+.modal-input { font-size: 16px !important; padding: 0.4rem 0.6rem !important; }
