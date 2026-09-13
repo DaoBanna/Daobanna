@@ -185,7 +185,6 @@ const app = {
         const fyEl = document.getElementById('filter-year'); 
         const fmEl = document.getElementById('filter-month');
 
-        // เซ็ตค่าเริ่มต้นแค่วันแรกที่โหลด
         if (this.isInitialLoad && !isBackground) {
             const today = new Date(); 
             const curYear = today.getFullYear().toString();
