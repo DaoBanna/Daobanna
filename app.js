@@ -2,10 +2,6 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ3Z36H2V5mbmVIN_Rj
     
 async function callAPI(action, data = null, retries = 3) {
     try {
-        if (!navigator.onLine) {
-            throw new Error("❌ ขาดการเชื่อมต่ออินเทอร์เน็ต! กรุณาเช็คสัญญาณเน็ตก่อนบันทึกข้อมูลครับ");
-        }
-
         const method = data ? 'POST' : 'GET';
         const payloadStr = data ? encodeURIComponent(JSON.stringify(data)) : '';
         // แนบ Date.now() ไปกับ API เพื่อป้องกันเบราว์เซอร์จำข้อมูล JSON เก่า
@@ -143,7 +139,6 @@ const app = {
         }
     },
     
-    // ฟังก์ชันดึงข้อมูลแบบใหม่ ลบ Cache เดิมทิ้งหมด และรองรับการดึงแบบเงียบๆ (Silent)
     fetchData: async function(isSilent = false) {
         if (!isSilent && this.data.length === 0) {
             const l = document.getElementById('loader');
