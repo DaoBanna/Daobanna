@@ -4,7 +4,6 @@ async function callAPI(action, data = null, retries = 3) {
     try {
         const method = data ? 'POST' : 'GET';
         const payloadStr = data ? encodeURIComponent(JSON.stringify(data)) : '';
-        // แนบ Date.now() ไปกับ API เพื่อป้องกันเบราว์เซอร์จำข้อมูล JSON เก่า
         const fetchUrl = method === 'GET' 
             ? `${SCRIPT_URL}?action=${action}&t=${Date.now()}` 
             : `${SCRIPT_URL}?action=${action}&payload=${payloadStr}`;
